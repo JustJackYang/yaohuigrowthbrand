@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YaohuiGrowth - 小红书图文生成器</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            /* Generator UI Colors */
+            --ui-bg: #1e1e1e;
+            --ui-sidebar: #252526;
+            --ui-border: #3e3e42;
+            --ui-text: #cccccc;
+            --ui-input-bg: #3c3c3c;
+            --ui-accent: #0e639c;
+            --ui-accent-hover: #1177bb;
+
+            /* Slide Colors (From Template) */
+            --bg-color: #050510;
+            --card-bg: #0A0A12;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255,255,255,0.68);
+            --accent-color: #00F0FF;
+            --card-width: 600px;
+            --card-height: 800px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--ui-bg);
+            color: var(--ui-text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Layout */
+        .sidebar {
+            width: 400px;
+            background-color: var(--ui-sidebar);
+            border-right: 1px solid var(--ui-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #1a1a2e; /* Match slide background context */
+        }
+
+        /* UI Components */
+        h1, h2, h3 { color: #fff; margin-top: 0; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--ui-input-bg);
+            border: 1px solid var(--ui-border);
+            color: #fff;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        .form-group textarea { height: 150px; resize: vertical; }
+
+        button.primary-btn {
+            background-color: var(--ui-accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button.primary-btn:hover { background-color: var(--ui-accent-hover); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        button.secondary-btn {
+            background-color: #3c3c3c;
+            color: #ccc;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            flex: 1;
+        }
+        button.secondary-btn:hover { background-color: #4c4c4c; }
+
+        .settings-toggle {
+            cursor: pointer;
+            color: #aaa;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        .settings-panel { display: none; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-bottom: 20px; }
+        .settings-panel.show { display: block; }
+
+        /* Preview Area */
+        #preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* --- Slide Styles (Copied & Adapted) --- */
+        .slide {
+            width: var(--card-width);
+            height: var(--card-height);
+            padding: 35px 35px 60px 35px;
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            transform-origin: top left;
+        }
+
+        /* Zoom for preview if screen is small */
+        @media (max-width: 1200px) {
+            .slide { transform: scale(0.8); margin-bottom: -160px; margin-right: -120px; }
+        }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .slide::after {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(0,240,255,0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .layer { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 240, 255, 0.18); padding-bottom: 12px; }
+        .brand { font-size: 13px; color: var(--accent-color); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .brand::before { content: ""; display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); box-shadow: 0 0 12px rgba(0, 240, 255, 0.9); }
+        .page-num { font-family: "Courier New", monospace; color: rgba(255,255,255,0.72); font-size: 13px; }
+        .stack { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+        
+        .slide h1 { font-size: 46px; margin: 0; color: #ffffff; line-height: 1.15; text-shadow: 0 0 16px rgba(0, 240, 255, 0.25); }
+        .slide h2 { font-size: 24px; margin: 0 0 6px 0; color: #fff; }
+        .slide p { margin: 0; font-size: 19px; line-height: 1.65; color: rgba(255,255,255,0.88); text-align: justify; }
+        .muted { color: rgba(255,255,255,0.66); }
+        .highlight { color: var(--accent-color); font-weight: 800; }
+        
+        .box { border: 1px solid rgba(0, 240, 255, 0.22); background: rgba(3, 12, 22, 0.9); padding: 18px; border-radius: 10px; box-shadow: 0 0 0 1px rgba(255,255,255,0.04) inset, 0 12px 30px rgba(0,0,0,0.55); }
+        .box, .box p, .box div, .box span { color: rgba(255,255,255,0.96); }
+        .box.center { text-align: center; }
+        
+        .list-item { width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.14); padding: 14px 16px; border-radius: 12px; display: flex; align-items: flex-start; gap: 12px; color: rgba(255,255,255,0.92); }
+        .list-icon { color: var(--accent-color); font-size: 18px; margin-top: 2px; flex: 0 0 auto; }
+        
+        .cover-grid { display: flex; gap: 16px; align-items: stretch; }
+        .cover-left { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+        /* Loading Overlay */
+        #loading { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Floating Download Button */
+        #download-btn-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            display: none;
+        }
+        #download-btn {
+            background: var(--accent-color);
+            color: #000;
+            padding: 15px 26px;
+            border-radius: 50px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,240,255,0.4);
+            border: none;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>YaohuiGrowth</h2>
+    <p style="font-size: 12px; color: #888;">输入观点，AI 自动生成认知拆解图文。</p>
+
+    <div class="form-group">
+        <label>核心观点 / 原始文本</label>
+        <textarea id="userInput" placeholder="例如：小企业必须站在现金流安全的结构上..."></textarea>
+    </div>
+
+    <div class="settings-toggle" onclick="toggleSettings()">⚙️ 显示高级设置 (API Key / Local LLM)</div>
+    <div id="settingsPanel" class="settings-panel">
+        <div class="form-group">
+            <label>1. 选择服务商 (Provider)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <select id="providerSelect" onchange="changeProvider()" style="padding: 8px; border-radius: 4px; background: #3c3c3c; color: white; border: 1px solid #555; flex: 1;">
+                    <option value="deepseek">DeepSeek 官方 (api.deepseek.com)</option>
+                    <option value="openai">OpenAI (api.openai.com)</option>
+                    <option value="siliconflow">硅基流动 (SiliconFlow)</option>
+                    <option value="ollama">本地 Ollama (localhost)</option>
+                    <option value="custom">自定义 (Custom)</option>
+                </select>
+            </div>
+            
+            <label>2. API Key & 设置</label>
+            <input type="password" id="apiKey" placeholder="sk-..." value="">
+        </div>
+        <div class="form-group">
+            <label>Base URL</label>
+            <input type="text" id="baseUrl" value="https://api.deepseek.com">
+        </div>
+        <div class="form-group">
+            <label>Model Name</label>
+            <input type="text" id="modelName" value="deepseek-chat">
+        </div>
+    </div>
+
+    <button class="primary-btn" onclick="generateContent()">✨ 生成图文</button>
+
+    <div style="margin-top: 20px; font-size: 12px; color: #666; line-height: 1.5;">
+        <p>提示：</p>
+        <ol style="padding-left: 20px;">
+            <li>填写你的 API Key (OpenAI/DeepSeek)。</li>
+            <li>输入你想表达的观点或文章。</li>
+            <li>点击生成，AI 将自动拆解逻辑并排版。</li>
+            <li>生成后可下载图片发布到小红书。</li>
+        </ol>
+    </div>
+</div>
+
+<div class="main-content">
+    <div id="preview-container">
+        <!-- Slides will be injected here -->
+        <div style="color: #666; margin-top: 100px;">
+            👈 请在左侧输入内容并点击生成
+        </div>
+    </div>
+</div>
+
+<div id="download-btn-container">
+    <button id="download-btn" onclick="downloadAll()">下载所有图片</button>
+</div>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <div style="color: white;">AI 正在深度思考与拆解...</div>
+</div>
+
+<script>
+    // --- Config Management ---
+    const STORAGE_KEY = 'yaohuigrowth_generator_config';
+    
+    function loadConfig() {
+        const config = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (config.apiKey) document.getElementById('apiKey').value = config.apiKey;
+        if (config.baseUrl) document.getElementById('baseUrl').value = config.baseUrl;
+        if (config.modelName) document.getElementById('modelName').value = config.modelName;
+    }
+
+    function saveConfig() {
+        const config = {
+            apiKey: document.getElementById('apiKey').value,
+            baseUrl: document.getElementById('baseUrl').value,
+            modelName: document.getElementById('modelName').value
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    }
+
+    function toggleSettings() {
+        document.getElementById('settingsPanel').classList.toggle('show');
+    }
+
+    function changeProvider() {
+        const type = document.getElementById('providerSelect').value;
+        const keyInput = document.getElementById('apiKey');
+        
+        if (type === 'deepseek') {
+            document.getElementById('baseUrl').value = 'https://api.deepseek.com';
+            document.getElementById('modelName').value = 'deepseek-chat';
+        } else if (type === 'openai') {
+            document.getElementById('baseUrl').value = 'https://api.openai.com/v1';
+            document.getElementById('modelName').value = 'gpt-4o';
+        } else if (type === 'siliconflow') {
+            document.getElementById('baseUrl').value = 'https://api.siliconflow.cn/v1';
+            document.getElementById('modelName').value = 'deepseek-ai/DeepSeek-V3';
+        } else if (type === 'ollama') {
+            document.getElementById('baseUrl').value = 'http://localhost:11434/v1';
+            document.getElementById('modelName').value = 'qwen2.5:7b';
+            if (!keyInput.value) keyInput.value = 'ollama';
+        }
+    }
+
+    // Auto-fill user key if present in code
+    window.onload = function() {
+        loadConfig();
+        const defaultKey = 'sk-nexnvzkolndlzfqrcblwnaggxqypyeqquvrippnowkjsqodb';
+        const currentKey = document.getElementById('apiKey').value;
+        if (!currentKey && defaultKey) {
+            document.getElementById('apiKey').value = defaultKey;
+        }
+    };
+
+    // --- Core Logic ---
+    async function generateContent() {
+        const userInput = document.getElementById('userInput').value;
+        const apiKey = document.getElementById('apiKey').value;
+        const baseUrl = document.getElementById('baseUrl').value;
+        const modelName = document.getElementById('modelName').value;
+
+        if (!userInput) return alert('请输入内容');
+        if (!apiKey) return alert('请先在设置中填写 API Key');
+
+        saveConfig();
+        showLoading(true);
+
+        const prompt = `
+你是一个专业的“小红书深度图文”生成专家。你的任务是将用户的输入（观点/文章）拆解为一套逻辑严密、排版精美的 Slide 数据。
+
+**核心风格要求（Cognitive Deconstruction）**：
+1. **封面 (Cover)**：标题要极其吸引人（痛点/反常识），副标题要点题。
+2. **逻辑流**：遵循“现象(What) -> 本质(Why) -> 结论/行动(How)”的拆解逻辑。
+3. **语言风格**：拒绝爹味，保持“人味儿”，用“深夜撸串”的语气，简练、扎心。
+4. **结构**：至少 4 页，最多 8 页。
+
+**输出格式**：
+必须严格返回 JSON 格式，不要包含 Markdown 代码块标记（\`\`\`json）。JSON 结构如下：
+{
+  "slides": [
+    {
+      "type": "cover", // 封面
+      "brand": "BUSINESS LOGIC", // 品牌栏文字，可根据内容调整，如 LIFE HACK, DEEP THINK
+      "pageNum": "01",
+      "subtitle": "副标题（英文或短中文）",
+      "title": "主标题（可包含HTML换行<br>，重点词用<span class=\"highlight\">包裹）",
+      "boxContent": "封面底部框内的引言或金句"
+    },
+    {
+      "type": "content", // 正文页
+      "brand": "...",
+      "pageNum": "02",
+      "title": "本页标题", // 如：一、小企业的第一目标...
+      "content": "正文段落，可包含HTML标签。", // 可选
+      "list": [ // 列表项（可选）
+        {"icon": "✕", "text": "列表内容1"},
+        {"icon": "⚠", "text": "列表内容2"}
+      ],
+      "box": "重点框内容（可选）",
+      "boxCenter": "居中强调框内容（可选）"
+    }
+    // ... 更多页面
+  ]
+}
+
+用户输入：
+${userInput}
+`;
+
+        try {
+            const response = await fetch(`${baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: [
+                        { role: "system", content: "You are a JSON generator." },
+                        { role: "user", content: prompt }
+                    ],
+                    temperature: 0.7
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API Request Failed');
+            }
+
+            const data = await response.json();
+            let content = data.choices[0].message.content;
+            // Clean up markdown code blocks if present
+            content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            const json = JSON.parse(content);
+            renderSlides(json.slides);
+            document.getElementById('download-btn-container').style.display = 'block';
+
+        } catch (e) {
+            let msg = e.message;
+            if (msg.includes('Failed to fetch') && baseUrl.includes('localhost')) {
+                msg += '\n\n提示：本地调用失败可能是因为 CORS 跨域限制。\n请确保 Ollama 已设置 OLLAMA_ORIGINS="*" 环境变量并重启。';
+            }
+            alert('生成失败: ' + msg);
+            console.error(e);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // --- Rendering ---
+    function renderSlides(slides) {
+        const container = document.getElementById('preview-container');
+        container.innerHTML = '';
+
+        const total = slides.length;
+
+        slides.forEach((slide, idx) => {
+            const pageNum = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+            const el = document.createElement('div');
+            el.className = 'slide';
+            
+            let innerHTML = `
+                <div class="layer">
+                    <div class="header">
+                        <div class="brand">${slide.brand || 'YAOHUI GROWTH'}</div>
+                        <div class="page-num">${pageNum}</div>
+                    </div>
+                    <div class="stack" ${slide.type === 'cover' ? 'style="justify-content: center;"' : ''}>
+            `;
+
+            if (slide.type === 'cover') {
+                innerHTML += `
+                    <div class="cover-grid">
+                        <div class="cover-left">
+                            <p class="muted" style="letter-spacing: 2px;">${slide.subtitle || ''}</p>
+                            <h1>${slide.title}</h1>
+                            ${slide.boxContent ? `<div class="box"><p style="font-size: 18px;">${slide.boxContent}</p></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                if (slide.title) innerHTML += `<h2>${slide.title}</h2>`;
+                if (slide.content) innerHTML += `<p>${slide.content}</p>`;
+                
+                if (slide.list && slide.list.length > 0) {
+                    slide.list.forEach(item => {
+                        innerHTML += `
+                            <div class="list-item">
+                                <div class="list-icon">${item.icon || '•'}</div>
+                                <div>${item.text}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (slide.box) {
+                    innerHTML += `<div class="box"><p style="margin:0;">${slide.box}</p></div>`;
+                }
+                
+                if (slide.boxCenter) {
+                    innerHTML += `<div class="box center"><p class="highlight" style="font-size: 22px; margin: 0;">${slide.boxCenter}</p></div>`;
+                }
+            }
+
+            innerHTML += `
+                    </div>
+                </div>
+            `;
+            
+            el.innerHTML = innerHTML;
+            container.appendChild(el);
+        });
+    }
+
+    // --- Utilities ---
+    function showLoading(show) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    async function downloadAll() {
+        const btn = document.getElementById('download-btn');
+        const originalText = btn.innerText;
+        btn.innerText = '正在渲染...';
+        const slides = document.querySelectorAll('.slide');
+
+        for (let i = 0; i < slides.length; i++) {
+            const slide = slides[i];
+            // Temporarily remove transform for accurate capture
+            const originalTransform = slide.style.transform;
+            const originalMargin = slide.style.margin;
+            
+            // Clone the node to render off-screen without zoom
+            // Actually, better to just capture it as is but scale up
+            // Issue: if we scale the DOM element using CSS transform, html2canvas might behave weirdly.
+            // Best practice: Capture the element, but we need to reset the scale for capture if we used CSS scale.
+            
+            // For simplicity in this tool, let's just use the current state but scale up in html2canvas config
+            // However, the CSS zoom I added for preview (@media) might affect it.
+            // Let's rely on html2canvas handling it, or just accept it.
+            // A safer way is to clone, append to body (hidden), render, then remove.
+            
+            const canvas = await html2canvas(slide, {
+                scale: 2, // High res
+                backgroundColor: '#0A0A12',
+                useCORS: true,
+                logging: false,
+                ignoreElements: (element) => false 
+            });
+
+            const link = document.createElement('a');
+            link.download = `xhs_slide_${String(i + 1).padStart(2, '0')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            await new Promise(r => setTimeout(r, 320));
+        }
+
+        btn.innerText = '下载完成';
+        setTimeout(() => btn.innerText = originalText, 1200);
+    }
+
+    // Initialize
+    loadConfig();
+</script>
+
+</body>
+</html>

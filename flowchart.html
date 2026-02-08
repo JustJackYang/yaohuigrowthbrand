@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Flowchart - Yaohui Growth Brand Consultant</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: 30px;
+        }
+        .mermaid {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>全栈独立产品开发流程图</h1>
+    <div class="mermaid">
+        graph TD
+        A[创意构思: 叶明桂品牌方法论数字化] --> B{技术选型}
+        B -->|前端| C[React + Tailwind + Framer Motion]
+        B -->|AI| D[通义千问 Qwen-Plus]
+        B -->|部署| E[Vercel + GitHub]
+
+        subgraph 开发阶段
+        C --> F[聊天式问卷 UI]
+        F --> G[辅助答题 & 行业适配]
+        G --> H[API 对接 & Prompt 工程]
+        H --> I[报告生成 & 图片导出]
+        end
+
+        subgraph 上线阶段
+        I --> J[Git Push to GitHub]
+        J --> K[Vercel 自动构建]
+        K --> L[绑定独立域名 yaohuigrowth.com]
+        L --> M[配置阿里云 DNS]
+        end
+
+        subgraph 交付与迭代
+        M --> N[正式上线 MVP]
+        N --> O[未来: 接入支付 & 独立站]
+        end
+
+        style N fill:#10b981,stroke:#059669,stroke-width:2px,color:white
+        style A fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:white
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>
