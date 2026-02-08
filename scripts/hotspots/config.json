@@ -1,0 +1,123 @@
+{
+  "site_title": "Hacker News Top Blogs 2025",
+  "feeds": [
+    {
+      "name": "simonwillison.net",
+      "url": "https://simonwillison.net/atom/everything/"
+    },
+    {
+      "name": "jeffgeerling.com",
+      "url": "https://www.jeffgeerling.com/blog.xml"
+    },
+    {
+      "name": "seangoedecke.com",
+      "url": "https://www.seangoedecke.com/rss.xml"
+    },
+    {
+      "name": "krebsonsecurity.com",
+      "url": "https://krebsonsecurity.com/feed/"
+    },
+    {
+      "name": "daringfireball.net",
+      "url": "https://daringfireball.net/feeds/main"
+    },
+    {
+      "name": "ericmigi.com",
+      "url": "https://ericmigi.com/rss.xml"
+    },
+    {
+      "name": "antirez.com",
+      "url": "http://antirez.com/rss"
+    },
+    {
+      "name": "idiallo.com",
+      "url": "https://idiallo.com/feed.rss"
+    },
+    {
+      "name": "maurycyz.com",
+      "url": "https://maurycyz.com/index.xml"
+    },
+    {
+      "name": "pluralistic.net",
+      "url": "https://pluralistic.net/feed/"
+    },
+    {
+      "name": "shkspr.mobi",
+      "url": "https://shkspr.mobi/blog/feed/"
+    },
+    {
+      "name": "mitchellh.com",
+      "url": "https://mitchellh.com/feed.xml"
+    },
+    {
+      "name": "dynomight.net",
+      "url": "https://dynomight.net/feed.xml"
+    },
+    {
+      "name": "utcc.utoronto.ca/~cks",
+      "url": "https://utcc.utoronto.ca/~cks/space/blog/?atom"
+    },
+    {
+      "name": "xeiaso.net",
+      "url": "https://xeiaso.net/blog.rss"
+    },
+    {
+      "name": "devblogs.microsoft.com/oldnewthing",
+      "url": "https://devblogs.microsoft.com/oldnewthing/feed"
+    },
+    {
+      "name": "righto.com",
+      "url": "https://www.righto.com/feeds/posts/default"
+    },
+    {
+      "name": "lucumr.pocoo.org",
+      "url": "https://lucumr.pocoo.org/feed.atom"
+    },
+    {
+      "name": "skyfall.dev",
+      "url": "https://skyfall.dev/rss.xml"
+    },
+    {
+      "name": "garymarcus.substack.com",
+      "url": "https://garymarcus.substack.com/feed"
+    },
+    {
+      "name": "rachelbythebay.com",
+      "url": "https://rachelbythebay.com/w/atom.xml"
+    },
+    {
+      "name": "overreacted.io",
+      "url": "https://overreacted.io/rss.xml"
+    },
+    {
+      "name": "timsh.org",
+      "url": "https://timsh.org/rss/"
+    },
+    {
+      "name": "johndcook.com",
+      "url": "https://www.johndcook.com/blog/feed/"
+    },
+    {
+      "name": "gilesthomas.com",
+      "url": "https://gilesthomas.com/feed/rss.xml"
+    },
+    {
+      "name": "matklad.github.io",
+      "url": "https://matklad.github.io/feed.xml"
+    },
+    {
+      "name": "derekthompson.org",
+      "url": "https://www.theatlantic.com/feed/author/derek-thompson/"
+    },
+    {
+      "name": "evanhahn.com",
+      "url": "https://evanhahn.com/feed.xml"
+    },
+    {
+      "name": "terriblesoftware.org",
+      "url": "https://terriblesoftware.org/feed/"
+    }
+  ],
+  "max_entries_per_feed": 3,
+  "output_file": "index.html"
+}
