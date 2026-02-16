@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Image, ArrowRight, Zap, Flame } from 'lucide-react';
+import { MessageSquare, Image, ArrowRight, Zap, Flame, Sparkles } from 'lucide-react';
 
 function Home() {
   const tools = [
@@ -11,6 +11,14 @@ function Home() {
       icon: <MessageSquare size={32} className="text-blue-400" />,
       path: '/consultant',
       color: 'from-blue-600 to-cyan-400'
+    },
+    {
+      id: 'naming-tool',
+      title: '智能起名系统',
+      description: '结合八字命理与诗词典故，为您生成富有文化底蕴的吉名。',
+      icon: <Sparkles size={32} className="text-cyan-400" />,
+      path: '/naming',
+      color: 'from-cyan-600 to-blue-400'
     },
     {
       id: 'content-generator',
