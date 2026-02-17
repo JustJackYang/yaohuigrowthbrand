@@ -1,4 +1,4 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS } from './data.js';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS } from './data.js';
 
 // Mock Character Meaning/Impression Database (Expanded)
 const CHAR_IMPRESSIONS = {
@@ -223,6 +223,9 @@ export function generateNames(
       const c1 = poem.keywords[0];
       const c2 = poem.keywords[1];
       
+      // Safety check: Filter out male-only chars for females
+      if (gender === 'female' && (MALE_ONLY_CHARS.includes(c1) || MALE_ONLY_CHARS.includes(c2))) return;
+
       if (STROKES[c1] && STROKES[c2]) {
          const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
          // Filter: Only high scores
@@ -242,6 +245,10 @@ export function generateNames(
     for (let j = 0; j < Math.min(charsB.length, limit); j++) {
        const c1 = charsA[i];
        const c2 = charsB[j];
+
+       // Safety check: Filter out male-only chars for females
+       if (gender === 'female' && (MALE_ONLY_CHARS.includes(c1) || MALE_ONLY_CHARS.includes(c2))) continue;
+
        // Check if combination already exists (from poems)
        if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
            // For permutations, we don't know the style effectively without a huge dictionary.

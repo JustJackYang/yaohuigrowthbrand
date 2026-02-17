@@ -98,7 +98,19 @@ export const POEMS = [
   { text: "娉娉袅袅十三余，豆蔻梢头二月初。", source: "杜牧《赠别》", keywords: ["袅", "袅", "豆", "蔻"], gender: "female", styles: ["qiaopi", "lingdong"] },
   { text: "冰雪林中著此身，不同桃李混芳尘。", source: "王冕《白梅》", keywords: ["冰", "雪"], gender: "female", styles: ["qingleng", "duanzhuang"] },
   { text: "零落成泥碾作尘，只有香如故。", source: "陆游《卜算子·咏梅》", keywords: ["如", "故"], gender: "female", styles: ["zhixing", "jianyi"] },
-  { text: "俏也不争春，只把春来报。", source: "毛泽东《卜算子·咏梅》", keywords: ["俏", "春"], gender: "female", styles: ["qiaopi", "lingdong"] }
+  { text: "俏也不争春，只把春来报。", source: "毛泽东《卜算子·咏梅》", keywords: ["俏", "春"], gender: "female", styles: ["qiaopi", "lingdong"] },
+  
+  // New Auspicious Poems (Yan Shu, Ouyang Xiu, etc.)
+  { text: "无可奈何花落去，似曾相识燕归来。", source: "晏殊《浣溪沙》", keywords: ["燕", "归"], gender: "mixed", styles: ["weimei", "xianya"] },
+  { text: "昨夜西风凋碧树，独上高楼，望尽天涯路。", source: "晏殊《蝶恋花》", keywords: ["碧", "树"], gender: "mixed", styles: ["haoran", "xiaoyao"] },
+  { text: "庭院深深深几许，杨柳堆烟，帘幕无重数。", source: "欧阳修《蝶恋花》", keywords: ["庭", "帘"], gender: "female", styles: ["wenwan", "guixiu"] },
+  { text: "雨横风狂三月暮，门掩黄昏，无计留春住。", source: "欧阳修《蝶恋花》", keywords: ["暮", "春"], gender: "female", styles: ["qingleng", "weimei"] },
+  { text: "平芜尽处是春山，行人更在春山外。", source: "欧阳修《踏莎行》", keywords: ["春", "山"], gender: "mixed", styles: ["xiaoyao", "weimei"] },
+  { text: "笙歌散进游人去，始觉春空。垂下帘陇，双燕归来细雨中。", source: "欧阳修《采桑子》", keywords: ["燕", "归"], gender: "female", styles: ["wenwan", "xianya"] },
+  { text: "夜凉如水，清景无限。", source: "苏轼《永遇乐》", keywords: ["清", "景"], gender: "mixed", styles: ["qingleng", "xiaoyao"] },
+  { text: "休对故人思故国，且将新火试新茶。诗酒趁年华。", source: "苏轼《望江南》", keywords: ["新", "华"], gender: "mixed", styles: ["xiaoyao", "yangguang"] },
+  { text: "莫听穿林打叶声，何妨吟啸且徐行。", source: "苏轼《定风波》", keywords: ["徐", "行"], gender: "male", styles: ["xiaoyao", "haoran"] },
+  { text: "山下兰芽短浸溪，松间沙路净无泥。", source: "苏轼《浣溪沙》", keywords: ["兰", "溪"], gender: "female", styles: ["weimei", "qingleng"] }
 ];
 
 export const STROKES = {
@@ -131,5 +143,16 @@ export const STROKES = {
   '月': 4, '宜': 8, '阑': 17, '珊': 10, '绿': 14, '红': 9,
   '君': 7, '离': 19, '疏': 12, '暗': 13, '香': 9, '娇': 15,
   '羞': 10, '豆': 7, '蔻': 17, '故': 9, '俏': 9, '春': 9,
-  '灵': 24, '炎': 8, '荧': 9, '炫': 9, '灿': 17, '炘': 8, '秋': 9, '烨': 10, '烯': 11, '烟': 10, '煠': 13, '煜': 13, '炀': 13, '煊': 13, '琪': 13, '暖': 13
+  '灵': 24, '炎': 8, '荧': 9, '炫': 9, '灿': 17, '炘': 8, '秋': 9, '烨': 10, '烯': 11, '烟': 10, '煠': 13, '煜': 13, '炀': 13, '煊': 13, '琪': 13, '暖': 13,
+  // Yan Shu / Ouyang Xiu additions
+  '燕': 16, '归': 18, '西': 6, '风': 9, '碧': 14, '楼': 15, '天': 4, '涯': 11, '路': 13,
+  '庭': 10, '深': 11, '许': 11, '帘': 19, '幕': 14, '无': 12, '重': 9,
+  '雨': 8, '横': 16, '狂': 7, '三': 3, '乱': 7, '红': 9,
+  '平': 5, '芜': 10, '尽': 6, '春': 9, '山': 3, '行': 6,
+  '清': 11, '夜': 8, '沉': 8
 };
+
+// Strongly Masculine Characters (To be excluded for females)
+export const MALE_ONLY_CHARS = [
+  '刚', '强', '军', '兵', '战', '伟', '勇', '猛', '虎', '豹', '龙', '彪', '雷', '震', '威', '豪', '雄', '壮', '硕', '磊', '岩', '峰', '涛', '海', '钧', '锋', '锐', '剑', '铭', '铠', '铮', '铁', '钢', '岳', '衡', '川', '州', '帝', '皇', '霸', '乾', '坤', '宗', '祖', '显', '达', '建', '立', '国', '邦', '柱', '栋', '梁', '基', '宏', '图', '远', '志', '勋', '业', '功', '成', '胜', '利'
+];
