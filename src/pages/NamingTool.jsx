@@ -20,53 +20,60 @@ export default function NamingTool() {
   const [result, setResult] = useState(null);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleSubmit = async (e, isLoadMore = false, isCustom = false) => {
     e.preventDefault();
+    setErrorMsg(null);
     
     if (isLoadMore) {
         setLoadingMore(true);
     } else {
         setLoading(true);
+        setResult(null);
         setOffset(0); 
         setHasMore(true);
     }
 
-    // Simulate async delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Small delay to allow UI to update to loading state
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
         const baziResult = calculateBazi(formData.birthTime.replace('T', ' '), 120); // Default longitude
         
         let names = [];
-        if (isCustom && formData.customName) {
-            // Custom name analysis
-            // Assume surname is formData.surname
-            const surname = formData.surname;
-            // If user typed full name including surname, strip it. If not, assume it's just the given name?
-            // Let's simplify: if customName starts with surname, strip it.
-            let givenName = formData.customName;
-            if (givenName.startsWith(surname)) {
-                givenName = givenName.substring(surname.length);
+        const currentOffset = isLoadMore ? offset + 10 : 0;
+
+        try {
+            if (isCustom && formData.customName) {
+                // Custom name analysis
+                // Assume surname is formData.surname
+                const surname = formData.surname;
+                let givenName = formData.customName;
+                if (givenName.startsWith(surname)) {
+                    givenName = givenName.substring(surname.length);
+                }
+                
+                const char1 = givenName[0];
+                const char2 = givenName[1] || '';
+                
+                if (char1) {
+                     names = [calculateNameScore(surname, char1, char2, baziResult)];
+                }
+            } else {
+                // Generate names
+                names = generateNames(
+                    formData.surname, 
+                    baziResult, 
+                    10, 
+                    currentOffset, 
+                    formData.gender, 
+                    formData.style
+                );
             }
-            
-            const char1 = givenName[0];
-            const char2 = givenName[1] || '';
-            
-            if (char1) {
-                 names = [calculateNameScore(surname, char1, char2, baziResult)];
-            }
-        } else {
-            // Generate names
-            const currentOffset = isLoadMore ? offset + 10 : 0;
-            names = generateNames(
-                formData.surname, 
-                baziResult, 
-                10, 
-                currentOffset, 
-                formData.gender, 
-                formData.style
-            );
+        } catch (genErr) {
+            console.error("Generation Logic Error:", genErr);
+            throw new Error("起名算法运行异常，请刷新页面重试");
         }
 
         const data = {
@@ -90,11 +97,11 @@ export default function NamingTool() {
             setResult(data.data);
         }
       } else {
-        alert('错误: ' + data.error);
+        throw new Error(data.error);
       }
     } catch (err) {
       console.error(err);
-      alert('系统错误: ' + (err.message || '生成失败，请重试'));
+      setErrorMsg(err.message || '生成失败，请重试');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -133,7 +140,7 @@ export default function NamingTool() {
                 </div>
             </div>
             <div className="hidden md:flex items-center gap-4 text-xs font-mono text-slate-500">
-                <span>版本 V1.0.2</span>
+                <span>版本 V1.0.3</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>系统在线</span>
             </div>
@@ -141,6 +148,17 @@ export default function NamingTool() {
       </header>
       
       <div className="relative max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Error Message */}
+        {errorMsg && (
+            <div className="lg:col-span-12 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="w-4 h-4" />
+                    {errorMsg}
+                </span>
+                <button onClick={() => setErrorMsg(null)} className="text-xs underline hover:text-red-300">关闭</button>
+            </div>
+        )}
+
         {/* Input Section */}
         <div className="lg:col-span-4 space-y-6">
             <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-white/10 shadow-2xl shadow-black/50 sticky top-24">

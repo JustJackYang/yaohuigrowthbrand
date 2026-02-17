@@ -212,7 +212,10 @@ export function generateNames(
   const charsB = CHAR_DB[wxB] || [];
   
   // Strategy E: Cultural Words with Style Filtering
-  POEMS.forEach(poem => {
+  const safePoems = Array.isArray(POEMS) ? POEMS : [];
+  const safeMaleChars = Array.isArray(MALE_ONLY_CHARS) ? MALE_ONLY_CHARS : [];
+
+  safePoems.forEach(poem => {
     // 1. Gender Filter
     if (poem.gender !== 'mixed' && poem.gender !== gender) return;
 
@@ -224,13 +227,17 @@ export function generateNames(
       const c2 = poem.keywords[1];
       
       // Safety check: Filter out male-only chars for females
-      if (gender === 'female' && (MALE_ONLY_CHARS.includes(c1) || MALE_ONLY_CHARS.includes(c2))) return;
+      if (gender === 'female' && (safeMaleChars.includes(c1) || safeMaleChars.includes(c2))) return;
 
       if (STROKES[c1] && STROKES[c2]) {
-         const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
-         // Filter: Only high scores
-         if (candidate.score >= 80) {
-             candidates.push(candidate);
+         try {
+             const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
+             // Filter: Only high scores
+             if (candidate.score >= 80) {
+                 candidates.push(candidate);
+             }
+         } catch (e) {
+             console.warn("Error calculating score for poem candidate:", c1, c2, e);
          }
       }
     }
@@ -247,14 +254,18 @@ export function generateNames(
        const c2 = charsB[j];
 
        // Safety check: Filter out male-only chars for females
-       if (gender === 'female' && (MALE_ONLY_CHARS.includes(c1) || MALE_ONLY_CHARS.includes(c2))) continue;
+       if (gender === 'female' && (safeMaleChars.includes(c1) || safeMaleChars.includes(c2))) continue;
 
        // Check if combination already exists (from poems)
        if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
            // For permutations, we don't know the style effectively without a huge dictionary.
            // So we only include them if targetStyle is 'all'
            if (targetStyle === 'all') {
-               candidates.push(calculateNameScore(surname, c1, c2, bazi));
+               try {
+                   candidates.push(calculateNameScore(surname, c1, c2, bazi));
+               } catch (e) {
+                   console.warn("Error calculating score for permutation:", c1, c2, e);
+               }
            }
        }
     }
