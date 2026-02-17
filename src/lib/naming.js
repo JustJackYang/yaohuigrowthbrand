@@ -1,4 +1,4 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS } from './data.js';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS } from './data.js';
 
 // Mock Character Meaning/Impression Database (Expanded)
 const CHAR_IMPRESSIONS = {
@@ -55,7 +55,16 @@ const isControlling = (from, to) => {
     return controlling[from] === to;
 };
 
+const isHanChar = (c) => /^[\u3400-\u4DBF\u4E00-\u9FFF]$/.test(String(c || ''));
+const isBannedChar = (c) => Array.isArray(BAD_NAME_CHARS) && BAD_NAME_CHARS.includes(c);
+
 export function calculateNameScore(surname, char1, char2, bazi, source) {
+    if (!isHanChar(char1) || isBannedChar(char1)) {
+        throw new Error(`名字包含不建议用字：「${char1}」`);
+    }
+    if (char2 && (!isHanChar(char2) || isBannedChar(char2))) {
+        throw new Error(`名字包含不建议用字：「${char2}」`);
+    }
     const s0 = STROKES[surname] || 0;
     const s1 = STROKES[char1] || 0;
     const s2 = STROKES[char2] || 0;
@@ -248,6 +257,8 @@ export function generateNames(
     const ch = normalizeChar(c);
     if (!ch || ch.length !== 1) return false;
     if (/\s/.test(ch)) return false;
+    if (!isHanChar(ch)) return false;
+    if (isBannedChar(ch)) return false;
     const strokes = STROKES[ch];
     if (!strokes) return false;
     if (strokes >= 31) return false;
