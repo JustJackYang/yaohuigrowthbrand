@@ -10,6 +10,8 @@ export default function NamingTool() {
     surname: '杨',
     gender: 'male',
     style: 'all',
+    nameLength: 2,
+    sourcePreference: 'balanced',
     birthTime: '2024-01-01T08:00', 
     birthLocation: '深圳',
     customName: ''
@@ -68,7 +70,9 @@ export default function NamingTool() {
                     10, 
                     currentOffset, 
                     formData.gender, 
-                    formData.style
+                    formData.style,
+                    Number(formData.nameLength) || 2,
+                    formData.sourcePreference || 'balanced'
                 );
             }
         } catch (genErr) {
@@ -221,6 +225,41 @@ export default function NamingTool() {
                                     <span className="text-[9px] opacity-70 truncate w-full">{def.desc}</span>
                                 </button>
                             ))}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-cyan-500/80 uppercase tracking-widest mb-1.5">名字字数</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({...formData, nameLength: 2})}
+                                    className={`p-2 rounded text-xs font-medium transition-all border ${Number(formData.nameLength) === 2 ? 'bg-white/10 border-white/30 text-white' : 'bg-slate-950/30 border-white/5 text-slate-500 hover:border-white/10'}`}
+                                >
+                                    双字名
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({...formData, nameLength: 1})}
+                                    className={`p-2 rounded text-xs font-medium transition-all border ${Number(formData.nameLength) === 1 ? 'bg-white/10 border-white/30 text-white' : 'bg-slate-950/30 border-white/5 text-slate-500 hover:border-white/10'}`}
+                                >
+                                    单字名
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-bold text-cyan-500/80 uppercase tracking-widest mb-1.5">参考来源</label>
+                            <select
+                                value={formData.sourcePreference}
+                                onChange={e => setFormData({...formData, sourcePreference: e.target.value})}
+                                className="w-full p-2.5 bg-slate-950/50 border border-white/10 rounded-lg focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 outline-none text-xs text-white"
+                            >
+                                <option value="balanced">不限（古文仅参考）</option>
+                                <option value="modern">现代优先</option>
+                                <option value="classic">古文优先</option>
+                            </select>
                         </div>
                     </div>
                     

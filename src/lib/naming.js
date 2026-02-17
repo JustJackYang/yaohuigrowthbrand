@@ -1,4 +1,4 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS } from './data.js';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS } from './data.js';
 
 // Mock Character Meaning/Impression Database (Expanded)
 const CHAR_IMPRESSIONS = {
@@ -35,6 +35,25 @@ const CHAR_IMPRESSIONS = {
 };
 
 const AUSPICIOUS_STROKES = [15, 16, 21, 23, 24, 25, 29, 31, 32, 33, 35, 37, 39, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81];
+
+const getWugeElementByStroke = (n) => {
+    const mod = Math.abs(Number(n) || 0) % 10;
+    if (mod === 1 || mod === 2) return '木';
+    if (mod === 3 || mod === 4) return '火';
+    if (mod === 5 || mod === 6) return '土';
+    if (mod === 7 || mod === 8) return '金';
+    return '水';
+};
+
+const isGenerating = (from, to) => {
+    const generating = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
+    return generating[from] === to;
+};
+
+const isControlling = (from, to) => {
+    const controlling = { '木': '土', '土': '水', '水': '火', '火': '金', '金': '木' };
+    return controlling[from] === to;
+};
 
 export function calculateNameScore(surname, char1, char2, bazi, source) {
     const s0 = STROKES[surname] || 0;
@@ -116,6 +135,18 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     const earthStroke = s1 + s2;  // 地格
     const totalStroke = total;    // 总格
     const outerStroke = (char2 ? s2 : 0) + 1 + (s0 === 1 ? 1 : 0); // 外格 (Approx)
+    const heavenStroke = s0 + 1; // 天格
+    const earthStrokeFixed = char2 ? earthStroke : s1 + 1;
+    const sancai = {
+        heaven: getWugeElementByStroke(heavenStroke),
+        person: getWugeElementByStroke(personStroke),
+        earth: getWugeElementByStroke(earthStrokeFixed)
+    };
+    let sancaiScore = 0;
+    if (isGenerating(sancai.heaven, sancai.person)) sancaiScore += 5;
+    if (isGenerating(sancai.person, sancai.earth)) sancaiScore += 5;
+    if (isControlling(sancai.heaven, sancai.person)) sancaiScore -= 5;
+    if (isControlling(sancai.person, sancai.earth)) sancaiScore -= 5;
 
     if (AUSPICIOUS_STROKES.includes(total)) {
         strokeScore += 30;
@@ -125,16 +156,18 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         strokeAnalysis = `总格${total}(中平) - 守成之象`;
     }
     
-    strokeAnalysis += ` | 人格${personStroke}(${AUSPICIOUS_STROKES.includes(personStroke) ? '吉' : '平'}) | 地格${earthStroke}(${AUSPICIOUS_STROKES.includes(earthStroke) ? '吉' : '平'})`;
+    strokeAnalysis += ` | 人格${personStroke}(${AUSPICIOUS_STROKES.includes(personStroke) ? '吉' : '平'}) | 地格${earthStrokeFixed}(${AUSPICIOUS_STROKES.includes(earthStrokeFixed) ? '吉' : '平'})`;
+    strokeAnalysis += ` | 三才:${sancai.heaven}${sancai.person}${sancai.earth}(${sancaiScore >= 5 ? '顺生' : sancaiScore <= -5 ? '相克' : '平'})`;
+    strokeScore += Math.max(-5, Math.min(10, sancaiScore));
 
     // 3. Cultural Source
     let culturalAnalysis = "";
     if (source) {
-        culturalScore += 20;
+        culturalScore += 10;
         // Parse source like "Li Bai <Jing Ye Si>"
         culturalAnalysis = `📜 典籍出处\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${wx2}之意象，意境深远。`;
     } else {
-        culturalScore += 5;
+        culturalScore += 8;
         culturalAnalysis = "💡 现代组合\n字义稳重，朗朗上口，符合现代审美习惯。";
     }
 
@@ -161,7 +194,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     
     // Combine impressions
     const keywords = [...new Set([...imp1.keywords, ...imp2.keywords])].slice(0, 3).join(" / ");
-    const socialAnalysis = `👀 **第一印象**\n${keywords}。\n给人以“${totalScore > 85 ? '专业且有魄力' : '亲和且踏实'}”的社交信号。`;
+    const socialAnalysis = `👀 **第一印象**\n${keywords}。\n给人以“${totalScore > 85 ? '干净利落 / 有担当' : '亲和稳重 / 有分寸'}”的社交信号。`;
     
     const psychologyAnalysis = `🧠 **潜意识暗示**\n${imp1.psycho}，${imp2.psycho}。\n名字磁场引导孩子走向${totalScore > 85 ? '“领袖与成就”' : '“安稳与幸福”'}。`;
 
@@ -177,7 +210,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
        analysis: {
            baziMatch: baziAnalysis,
            culturalDepth: culturalAnalysis,
-           phonetic: `🔊 **声调分析**\n${surname}(${Math.random() > 0.5 ? '平' : '仄'}) ${char1}(${Math.random() > 0.5 ? '平' : '仄'}) ${char2}(${Math.random() > 0.5 ? '平' : '仄'})。\n音律起伏，朗朗上口。`, 
+           phonetic: `🔊 **音律建议**\n建议避免“全同调/全仄/全平”，优先选择抑扬起伏、读起来顺口的组合。`, 
            stroke: strokeAnalysis,
            social: socialAnalysis,
            psychology: psychologyAnalysis,
@@ -195,7 +228,9 @@ export function generateNames(
   count = 10,
   offset = 0,
   gender = 'male',
-  targetStyle = 'all'
+  targetStyle = 'all',
+  nameLength = 2,
+  sourcePreference = 'balanced'
 ) {
   const candidates = [];
   
@@ -208,14 +243,34 @@ export function generateNames(
   const wxA = favoredElements[0];
   const wxB = favoredElements[1] || favoredElements[0]; // Fallback to same if only 1
   
-  const charsA = CHAR_DB[wxA] || [];
-  const charsB = CHAR_DB[wxB] || [];
-  
-  // Strategy E: Cultural Words with Style Filtering
-  const safePoems = Array.isArray(POEMS) ? POEMS : [];
-  const safeMaleChars = Array.isArray(MALE_ONLY_CHARS) ? MALE_ONLY_CHARS : [];
+  const normalizeChar = (c) => (typeof c === 'string' ? c.trim() : '');
+  const isValidChar = (c) => {
+    const ch = normalizeChar(c);
+    if (!ch || ch.length !== 1) return false;
+    if (/\s/.test(ch)) return false;
+    const strokes = STROKES[ch];
+    if (!strokes) return false;
+    if (strokes >= 31) return false;
+    if (gender === 'female' && Array.isArray(MALE_ONLY_CHARS) && MALE_ONLY_CHARS.includes(ch)) return false;
+    return true;
+  };
 
-  safePoems.forEach(poem => {
+  const uniq = (arr) => Array.from(new Set((arr || []).map(normalizeChar).filter(Boolean)));
+
+  const baseA = uniq(CHAR_DB[wxA] || []).filter(isValidChar);
+  const baseB = uniq(CHAR_DB[wxB] || []).filter(isValidChar);
+  const modern = uniq([...(MODERN_AUSPICIOUS_CHARS?.[gender] || []), ...(MODERN_AUSPICIOUS_CHARS?.mixed || [])]).filter(isValidChar);
+  const styleKeywords = targetStyle !== 'all'
+    ? uniq(STYLE_DEFINITIONS?.[gender]?.[targetStyle]?.keywords || []).filter(isValidChar)
+    : [];
+
+  const charsA = uniq([...styleKeywords, ...modern, ...baseA]).filter(isValidChar);
+  const charsB = uniq([...styleKeywords, ...modern, ...baseB]).filter(isValidChar);
+  
+  const safePoems = Array.isArray(POEMS) ? POEMS : [];
+  const poemEnabled = sourcePreference !== 'modern';
+
+  if (poemEnabled) safePoems.forEach(poem => {
     // 1. Gender Filter
     if (poem.gender !== 'mixed' && poem.gender !== gender) return;
 
@@ -223,51 +278,54 @@ export function generateNames(
     if (targetStyle !== 'all' && poem.styles && !poem.styles.includes(targetStyle)) return;
 
     if (poem.keywords.length >= 2) {
-      const c1 = poem.keywords[0];
-      const c2 = poem.keywords[1];
+      const c1 = normalizeChar(poem.keywords[0]);
+      const c2 = normalizeChar(poem.keywords[1]);
       
       // Safety check: Filter out male-only chars for females
-      if (gender === 'female' && (safeMaleChars.includes(c1) || safeMaleChars.includes(c2))) return;
+      if (!isValidChar(c1) || !isValidChar(c2)) return;
 
-      if (STROKES[c1] && STROKES[c2]) {
-         try {
-             const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
-             // Filter: Only high scores
-             if (candidate.score >= 80) {
-                 candidates.push(candidate);
-             }
-         } catch (e) {
-             console.warn("Error calculating score for poem candidate:", c1, c2, e);
-         }
-      }
+      try {
+        const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
+        const bias = sourcePreference === 'classic' ? 2 : 0;
+        const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
+        candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
+        candidates.push(candidate);
+      } catch (e) {}
     }
   });
   
-  // Strategy A-D: Permutations (Only if we need more names or no style specified)
-  // Permutations are harder to "Style", so we prioritize Poems for styles.
-  // If we don't have enough poem candidates, we fill with permutations but these are "General" style.
-  
-  const limit = 50; 
-  for (let i = 0; i < Math.min(charsA.length, limit); i++) {
-    for (let j = 0; j < Math.min(charsB.length, limit); j++) {
-       const c1 = charsA[i];
-       const c2 = charsB[j];
+  const limit = 60;
 
-       // Safety check: Filter out male-only chars for females
-       if (gender === 'female' && (safeMaleChars.includes(c1) || safeMaleChars.includes(c2))) continue;
+  if (Number(nameLength) === 1) {
+    const pool = uniq([...styleKeywords, ...modern, ...charsA, ...charsB]).filter(isValidChar);
+    for (let i = 0; i < Math.min(pool.length, 200); i++) {
+      const c1 = pool[i];
+      try {
+        const candidate = calculateNameScore(surname, c1, '', bazi);
+        const bias = sourcePreference === 'modern' ? 2 : 0;
+        const styleBias = styleKeywords.includes(c1) ? 2 : 0;
+        candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
+        candidates.push(candidate);
+      } catch (e) {}
+    }
+  } else {
+    for (let i = 0; i < Math.min(charsA.length, limit); i++) {
+      for (let j = 0; j < Math.min(charsB.length, limit); j++) {
+        const c1 = charsA[i];
+        const c2 = charsB[j];
 
-       // Check if combination already exists (from poems)
-       if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
-           // For permutations, we don't know the style effectively without a huge dictionary.
-           // So we only include them if targetStyle is 'all'
-           if (targetStyle === 'all') {
-               try {
-                   candidates.push(calculateNameScore(surname, c1, c2, bazi));
-               } catch (e) {
-                   console.warn("Error calculating score for permutation:", c1, c2, e);
-               }
-           }
-       }
+        if (!isValidChar(c1) || !isValidChar(c2)) continue;
+
+        if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
+          try {
+            const candidate = calculateNameScore(surname, c1, c2, bazi);
+            const bias = sourcePreference === 'modern' ? 2 : 0;
+            const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
+            candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
+            candidates.push(candidate);
+          } catch (e) {}
+        }
+      }
     }
   }
 
