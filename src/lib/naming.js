@@ -1,4 +1,4 @@
-import { CHAR_DB, POEMS, STROKES } from './data';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS } from './data';
 
 // Mock Character Meaning/Impression Database (Expanded)
 const CHAR_IMPRESSIONS = {
@@ -184,7 +184,8 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
            summary: summary
        },
        source: source ? { text: source.text, source: source.source } : undefined,
-       recommendationLevel: level
+       recommendationLevel: level,
+       styleTags: source?.styles || []
     };
 }
 
@@ -192,7 +193,9 @@ export function generateNames(
   surname,
   bazi,
   count = 10,
-  offset = 0
+  offset = 0,
+  gender = 'male',
+  targetStyle = 'all'
 ) {
   const candidates = [];
   
@@ -208,8 +211,14 @@ export function generateNames(
   const charsA = CHAR_DB[wxA] || [];
   const charsB = CHAR_DB[wxB] || [];
   
-  // Strategy E: Cultural Words
+  // Strategy E: Cultural Words with Style Filtering
   POEMS.forEach(poem => {
+    // 1. Gender Filter
+    if (poem.gender !== 'mixed' && poem.gender !== gender) return;
+
+    // 2. Style Filter
+    if (targetStyle !== 'all' && poem.styles && !poem.styles.includes(targetStyle)) return;
+
     if (poem.keywords.length >= 2) {
       const c1 = poem.keywords[0];
       const c2 = poem.keywords[1];
@@ -224,9 +233,10 @@ export function generateNames(
     }
   });
   
-  // Strategy A-D: Permutations
-  // We generate a large pool then slice
-  // Limit iterations for performance if lists are huge
+  // Strategy A-D: Permutations (Only if we need more names or no style specified)
+  // Permutations are harder to "Style", so we prioritize Poems for styles.
+  // If we don't have enough poem candidates, we fill with permutations but these are "General" style.
+  
   const limit = 50; 
   for (let i = 0; i < Math.min(charsA.length, limit); i++) {
     for (let j = 0; j < Math.min(charsB.length, limit); j++) {
@@ -234,7 +244,11 @@ export function generateNames(
        const c2 = charsB[j];
        // Check if combination already exists (from poems)
        if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
-           candidates.push(calculateNameScore(surname, c1, c2, bazi));
+           // For permutations, we don't know the style effectively without a huge dictionary.
+           // So we only include them if targetStyle is 'all'
+           if (targetStyle === 'all') {
+               candidates.push(calculateNameScore(surname, c1, c2, bazi));
+           }
        }
     }
   }

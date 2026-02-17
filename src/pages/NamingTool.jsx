@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { Loader2, Sparkles, User, RefreshCw, Search, BookOpen, Star, TrendingUp, Brain, Volume2, ShieldCheck } from 'lucide-react';
 import { calculateBazi } from '../lib/bazi';
 import { generateNames, calculateNameScore } from '../lib/naming';
+import { STYLE_DEFINITIONS } from '../lib/data';
 
 export default function NamingTool() {
   const [formData, setFormData] = useState({
     surname: '杨',
     gender: 'male',
+    style: 'all',
     birthTime: '2024-01-01T08:00', 
     birthLocation: '深圳',
     customName: ''
@@ -57,7 +59,14 @@ export default function NamingTool() {
         } else {
             // Generate names
             const currentOffset = isLoadMore ? offset + 10 : 0;
-            names = generateNames(formData.surname, baziResult, 10, currentOffset);
+            names = generateNames(
+                formData.surname, 
+                baziResult, 
+                10, 
+                currentOffset, 
+                formData.gender, 
+                formData.style
+            );
         }
 
         const data = {
@@ -156,21 +165,45 @@ export default function NamingTool() {
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
-                            onClick={() => setFormData({...formData, gender: 'male'})}
+                            onClick={() => setFormData({...formData, gender: 'male', style: 'all'})}
                             className={`p-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2 ${formData.gender === 'male' ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400' : 'bg-slate-950/30 border-white/10 text-slate-500 hover:border-white/20'}`}
                         >
                             <span className="w-2 h-2 rounded-full bg-current"></span>
-                            男
+                            男 (Male)
                         </button>
                         <button
                             type="button"
-                            onClick={() => setFormData({...formData, gender: 'female'})}
+                            onClick={() => setFormData({...formData, gender: 'female', style: 'all'})}
                             className={`p-3 rounded-lg border text-sm font-medium transition-all flex items-center justify-center gap-2 ${formData.gender === 'female' ? 'bg-pink-500/10 border-pink-500/50 text-pink-400' : 'bg-slate-950/30 border-white/10 text-slate-500 hover:border-white/20'}`}
                         >
                             <span className="w-2 h-2 rounded-full bg-current"></span>
-                            女
+                            女 (Female)
                         </button>
                     </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold text-cyan-500/80 uppercase tracking-widest mb-1.5">期望风格</label>
+                        <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                             <button
+                                type="button"
+                                onClick={() => setFormData({...formData, style: 'all'})}
+                                className={`p-2 rounded text-xs font-medium transition-all border ${formData.style === 'all' ? 'bg-white/10 border-white/30 text-white' : 'bg-slate-950/30 border-white/5 text-slate-500 hover:border-white/10'}`}
+                            >
+                                🎲 综合不限
+                            </button>
+                            {Object.entries(STYLE_DEFINITIONS[formData.gender] || {}).map(([key, def]) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setFormData({...formData, style: key})}
+                                    className={`p-2 rounded text-xs font-medium transition-all border text-left flex flex-col gap-0.5 ${formData.style === key ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400' : 'bg-slate-950/30 border-white/5 text-slate-500 hover:border-white/10'}`}
+                                >
+                                    <span className="font-bold">{def.label}</span>
+                                    <span className="text-[9px] opacity-70 truncate w-full">{def.desc}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     
                     <div>
