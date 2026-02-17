@@ -1,4 +1,4 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS } from './data';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS } from './data.js';
 
 // Mock Character Meaning/Impression Database (Expanded)
 const CHAR_IMPRESSIONS = {

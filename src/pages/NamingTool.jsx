@@ -94,7 +94,7 @@ export default function NamingTool() {
       }
     } catch (err) {
       console.error(err);
-      alert('生成失败，请重试');
+      alert('系统错误: ' + (err.message || '生成失败，请重试'));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -437,6 +437,13 @@ export default function NamingTool() {
                         {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" />}
                         加载更多方案
                     </button>
+                )}
+                
+                {!formData.customName && result.names.length === 0 && (
+                    <div className="p-8 text-center text-slate-500 bg-slate-900/30 rounded-xl border border-white/5 border-dashed">
+                        <p>未找到符合条件的吉名。</p>
+                        <p className="text-xs mt-2">建议尝试切换“期望风格”或选择“综合不限”。</p>
+                    </div>
                 )}
               </div>
             </>
