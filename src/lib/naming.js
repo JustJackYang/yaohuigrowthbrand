@@ -329,36 +329,51 @@ export function generateNames(
     }
   }
 
-  // Sort by score desc
-  const sorted = candidates.sort((a, b) => b.score - a.score);
-  
-  // Slice with Diversity Constraint
-  // Logic: Iterate through sorted list. Skip if char usage > 3.
-   const result = [];
-   const charCounts = {};
-   
-   let pickedCount = 0;
-   // We need to loop until we fill 'count' or run out.
-   // We start considering candidates from index 'offset'.
-   
-   for (let i = offset; i < sorted.length && pickedCount < count; i++) {
-       const candidate = sorted[i];
-       const c1 = candidate.char1;
-       const c2 = candidate.char2;
-       
-       const count1 = charCounts[c1] || 0;
-       const count2 = charCounts[c2] || 0;
-       
-       // Limit: Max 3 times per character in this batch
-       if (count1 >= 3 || count2 >= 3) {
-           continue; 
-       }
-       
-       result.push(candidate);
-       charCounts[c1] = count1 + 1;
-       charCounts[c2] = count2 + 1;
-       pickedCount++;
-   }
+  // De-duplicate candidates by name (prevents repeats within one run)
+  const uniqueMap = new Map();
+  for (const c of candidates) {
+    const key = `${c.char1}|${c.char2}`;
+    const existing = uniqueMap.get(key);
+    if (!existing || (typeof c.score === 'number' && c.score > existing.score)) {
+      uniqueMap.set(key, c);
+    }
+  }
 
-   return result;
+  // Sort by score desc
+  const sorted = Array.from(uniqueMap.values()).sort((a, b) => b.score - a.score);
+
+  // Stable paging: build a "diverse list" first, then slice by offset.
+  // This avoids duplicates when clicking "加载更多" (because the previous implementation
+  // applied diversity after offset, which can cause overlap across pages).
+  const diverse = [];
+  const usedFullNames = new Set();
+  const charCounts = {};
+
+  const desired = Math.max(0, Number(offset) || 0) + Math.max(0, Number(count) || 0);
+  const softCap = desired + 80;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const candidate = sorted[i];
+    const fullNameKey = candidate.fullName || `${candidate.surname}${candidate.char1}${candidate.char2 || ''}`;
+    if (usedFullNames.has(fullNameKey)) continue;
+
+    const c1 = candidate.char1;
+    const c2 = candidate.char2 || '';
+    const count1 = charCounts[c1] || 0;
+    const count2 = c2 ? (charCounts[c2] || 0) : 0;
+
+    // Limit: Max 3 times per character in the overall list
+    if (count1 >= 3 || (c2 && count2 >= 3)) continue;
+
+    diverse.push(candidate);
+    usedFullNames.add(fullNameKey);
+    charCounts[c1] = count1 + 1;
+    if (c2) charCounts[c2] = count2 + 1;
+
+    if (diverse.length >= softCap) break;
+  }
+
+  const start = Math.max(0, Number(offset) || 0);
+  const end = start + Math.max(0, Number(count) || 0);
+  return diverse.slice(start, end);
 }

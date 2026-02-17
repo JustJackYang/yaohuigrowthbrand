@@ -91,10 +91,21 @@ export default function NamingTool() {
       if (data.success) {
         if (isLoadMore) {
              if (data.data.names.length < 10) setHasMore(false);
-             setResult((prev) => ({
-                 ...prev,
-                 names: [...prev.names, ...data.data.names]
-             }));
+             setResult((prev) => {
+                 const combined = [...(prev?.names || []), ...(data.data.names || [])];
+                 const seen = new Set();
+                 const deduped = [];
+                 for (const n of combined) {
+                     const key = n?.fullName || `${n?.surname || ''}${n?.char1 || ''}${n?.char2 || ''}`;
+                     if (!key || seen.has(key)) continue;
+                     seen.add(key);
+                     deduped.push(n);
+                 }
+                 return {
+                     ...prev,
+                     names: deduped
+                 };
+             });
              setOffset(prev => prev + 10);
         } else {
             if (data.data.names.length < 10) setHasMore(false);
