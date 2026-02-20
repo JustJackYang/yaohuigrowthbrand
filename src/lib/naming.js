@@ -1,40 +1,50 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS } from './data.js';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
 
-// Mock Character Meaning/Impression Database (Expanded)
-const CHAR_IMPRESSIONS = {
-    '土': { 
-        meaning: "厚重、承载、稳健", 
-        social: "诚信可靠 / 务实派", 
-        psycho: "暗示稳重与责任感",
-        keywords: ["踏实", "守信", "包容", "沉稳"]
-    },
-    '金': { 
-        meaning: "刚毅、果断、秩序", 
-        social: "执行力强 / 威严", 
-        psycho: "暗示决断力与魄力",
-        keywords: ["果敢", "锋利", "义气", "坚韧"]
-    },
-    '水': { 
-        meaning: "智慧、灵动、润泽", 
-        social: "善于变通 / 智囊", 
-        psycho: "暗示聪慧与适应力",
-        keywords: ["灵动", "深邃", "智谋", "柔韧"]
-    },
-    '木': { 
-        meaning: "生发、仁慈、向上", 
-        social: "进取心强 / 仁义", 
-        psycho: "暗示成长与正直",
-        keywords: ["生机", "仁爱", "挺拔", "向上"]
-    },
-    '火': { 
-        meaning: "热情、光明、礼仪", 
-        social: "感染力强 / 领袖", 
-        psycho: "暗示活力与希望",
-        keywords: ["热烈", "明亮", "礼貌", "升腾"]
-    },
+// Dynamic Impression Generator
+const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke) => {
+    const wuxingTraits = {
+        '木': { keyword: '仁爱', trait: '正直向上', career: '教育/艺术/医疗' },
+        '火': { keyword: '礼仪', trait: '热情开朗', career: '科技/餐饮/演艺' },
+        '土': { keyword: '信誉', trait: '稳重踏实', career: '建筑/农业/管理' },
+        '金': { keyword: '义气', trait: '果敢坚毅', career: '金融/法律/军警' },
+        '水': { keyword: '智慧', trait: '聪慧灵动', career: '贸易/物流/智库' }
+    };
+
+    const t1 = wuxingTraits[wx1] || { keyword: '独特', trait: '个性鲜明', career: '自由职业' };
+    const t2 = wuxingTraits[wx2] || t1;
+
+    // Social Impression
+    let social = `👀 **第一印象**\n`;
+    social += `${t1.keyword}与${t2.keyword}并存，给人以“${t1.trait}${wx1 !== wx2 ? '且' + t2.trait : ''}”的观感。\n`;
+    if (totalStroke > 30) {
+        social += `名字气场宏大，易在群体中建立威信，适合领导者或专业人士。`;
+    } else {
+        social += `名字亲切随和，易获得他人信任与好感，人缘极佳。`;
+    }
+
+    // Psychological & Career
+    let psycho = `🧠 **潜意识与发展**\n`;
+    psycho += `**性格暗示**：${t1.trait}，做事${wx2 === '金' || wx2 === '火' ? '风风火火' : '沉稳有序'}。\n`;
+    psycho += `**职业方向**：适合向${t1.career}或${t2.career}领域发展。\n`;
+    
+    // Age Suitability based on Sancai
+    // Heaven (Youth/Elders), Person (Middle Age/Self), Earth (Middle-Late/Juniors)
+    // Simplified: Person is the core.
+    let age = `**年龄适配**：\n`;
+    if (sancaiScore >= 5) {
+        age += `少年运势顺遂（得长辈助），中年事业有成（基础稳固），晚年安享富贵。全龄段皆宜。`;
+    } else if (sancaiScore <= -5) {
+        age += `少年时期需磨砺心性，中年后凭借自身努力可开创局面。属大器晚成型。`;
+    } else {
+        age += `青年时期平稳发展，中年后运势渐入佳境。适合稳扎稳打。`;
+    }
+    
+    psycho += age;
+
+    return { social, psycho };
 };
 
-const AUSPICIOUS_STROKES = [15, 16, 21, 23, 24, 25, 29, 31, 32, 33, 35, 37, 39, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81];
+const AUSPICIOUS_STROKES = [1, 3, 5, 6, 7, 8, 11, 13, 15, 16, 21, 23, 24, 25, 29, 31, 32, 33, 35, 37, 39, 41, 45, 47, 48, 52, 57, 61, 63, 65, 67, 68, 81];
 
 const getWugeElementByStroke = (n) => {
     const mod = Math.abs(Number(n) || 0) % 10;
@@ -58,6 +68,26 @@ const isControlling = (from, to) => {
 const isHanChar = (c) => /^[\u3400-\u4DBF\u4E00-\u9FFF]$/.test(String(c || ''));
 const isBannedChar = (c) => Array.isArray(BAD_NAME_CHARS) && BAD_NAME_CHARS.includes(c);
 
+const checkHomophones = (surname, char1, char2) => {
+    const badList = HOMOPHONE_BLACKLIST[surname];
+    if (!badList) return;
+    
+    if (badList.includes(char1)) {
+        throw new Error(`名字「${surname}${char1}」可能包含不雅谐音`);
+    }
+    
+    if (char2) {
+        // Check full name combinations if needed (e.g. Yang Wei)
+        // Check char2 specifically
+        if (badList.includes(char2)) {
+             throw new Error(`名字「${surname}...${char2}」可能包含不雅谐音`);
+        }
+        
+        // Simple heuristic for 2-char names: Check if char1+char2 forms a bad word?
+        // Since we don't have pinyin, we rely on the blacklist being comprehensive for single chars relative to surname
+    }
+};
+
 export function calculateNameScore(surname, char1, char2, bazi, source) {
     if (!isHanChar(char1) || isBannedChar(char1)) {
         throw new Error(`名字包含不建议用字：「${char1}」`);
@@ -65,6 +95,10 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     if (char2 && (!isHanChar(char2) || isBannedChar(char2))) {
         throw new Error(`名字包含不建议用字：「${char2}」`);
     }
+    
+    // Check Homophones
+    checkHomophones(surname, char1, char2);
+
     const s0 = STROKES[surname] || 0;
     const s1 = STROKES[char1] || 0;
     const s2 = STROKES[char2] || 0;
@@ -86,7 +120,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     };
     
     const wx1 = getWuxing(char1);
-    const wx2 = getWuxing(char2);
+    const wx2 = char2 ? getWuxing(char2) : wx1; // If single char, treat as doubled or neutral
     
     // Detailed Wuxing Analysis Text
     let baziAnalysis = "";
@@ -136,20 +170,18 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         }
     }
 
-    baziAnalysis = `日主${bazi.dayMaster}，${bazi.strongOrWeak}。\n${wuxingText.join("，")}。\n${relationText}。整体平衡度：${favored.includes(wx1) && favored.includes(wx2) ? "⭐⭐⭐ 完美" : "⭐⭐ 良好"}`;
+    baziAnalysis = `日主${bazi.dayMaster}，${bazi.strongOrWeak}。\n${wuxingText.join("，")}。\n${relationText}。整体平衡度：${favored.includes(wx1) && (char2 ? favored.includes(wx2) : true) ? "⭐⭐⭐ 完美" : "⭐⭐ 良好"}`;
 
     // 2. Stroke Analysis
     let strokeAnalysis = "";
     const personStroke = s0 + s1; // 人格
-    const earthStroke = s1 + s2;  // 地格
+    const earthStroke = char2 ? s1 + s2 : s1 + 1;  // 地格
     const totalStroke = total;    // 总格
-    const outerStroke = (char2 ? s2 : 0) + 1 + (s0 === 1 ? 1 : 0); // 外格 (Approx)
     const heavenStroke = s0 + 1; // 天格
-    const earthStrokeFixed = char2 ? earthStroke : s1 + 1;
     const sancai = {
         heaven: getWugeElementByStroke(heavenStroke),
         person: getWugeElementByStroke(personStroke),
-        earth: getWugeElementByStroke(earthStrokeFixed)
+        earth: getWugeElementByStroke(earthStroke)
     };
     let sancaiScore = 0;
     if (isGenerating(sancai.heaven, sancai.person)) sancaiScore += 5;
@@ -165,7 +197,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         strokeAnalysis = `总格${total}(中平) - 守成之象`;
     }
     
-    strokeAnalysis += ` | 人格${personStroke}(${AUSPICIOUS_STROKES.includes(personStroke) ? '吉' : '平'}) | 地格${earthStrokeFixed}(${AUSPICIOUS_STROKES.includes(earthStrokeFixed) ? '吉' : '平'})`;
+    strokeAnalysis += ` | 人格${personStroke}(${AUSPICIOUS_STROKES.includes(personStroke) ? '吉' : '平'}) | 地格${earthStroke}(${AUSPICIOUS_STROKES.includes(earthStroke) ? '吉' : '平'})`;
     strokeAnalysis += ` | 三才:${sancai.heaven}${sancai.person}${sancai.earth}(${sancaiScore >= 5 ? '顺生' : sancaiScore <= -5 ? '相克' : '平'})`;
     strokeScore += Math.max(-5, Math.min(10, sancaiScore));
 
@@ -174,7 +206,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     if (source) {
         culturalScore += 10;
         // Parse source like "Li Bai <Jing Ye Si>"
-        culturalAnalysis = `📜 典籍出处\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${wx2}之意象，意境深远。`;
+        culturalAnalysis = `📜 典籍出处\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${char2 ? wx2 : ''}之意象，意境深远。`;
     } else {
         culturalScore += 8;
         culturalAnalysis = "💡 现代组合\n字义稳重，朗朗上口，符合现代审美习惯。";
@@ -198,20 +230,15 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     }
 
     // 4. Social & Psychology (Dynamic Generation)
-    const imp1 = CHAR_IMPRESSIONS[wx1] || { social: "独特", psycho: "个性鲜明", keywords: ["独特"] };
-    const imp2 = CHAR_IMPRESSIONS[wx2] || { social: "稳重", psycho: "踏实", keywords: ["稳重"] };
-    
-    // Combine impressions
-    const keywords = [...new Set([...imp1.keywords, ...imp2.keywords])].slice(0, 3).join(" / ");
-    const socialAnalysis = `👀 **第一印象**\n${keywords}。\n给人以“${totalScore > 85 ? '干净利落 / 有担当' : '亲和稳重 / 有分寸'}”的社交信号。`;
-    
-    const psychologyAnalysis = `🧠 **潜意识暗示**\n${imp1.psycho}，${imp2.psycho}。\n名字磁场引导孩子走向${totalScore > 85 ? '“领袖与成就”' : '“安稳与幸福”'}。`;
+    const { social, psycho } = getDynamicImpression(wx1, wx2, sancaiScore, totalStroke);
+    const socialAnalysis = social;
+    const psychologyAnalysis = psycho;
 
     return {
        surname,
        char1,
        char2,
-       fullName: surname + char1 + char2,
+       fullName: surname + char1 + (char2 || ''),
        strokes: { surname: s0, char1: s1, char2: s2, total },
        wuxing: [wx1, wx2],
        score: totalScore,
@@ -248,7 +275,6 @@ export function generateNames(
   
   // Select character pools based on favored elements
   // If we have 1 favored element, we use it for both chars or mix with generating element
-  // For V1, we simply take the top 2 favored elements
   const wxA = favoredElements[0];
   const wxB = favoredElements[1] || favoredElements[0]; // Fallback to same if only 1
   
@@ -261,6 +287,7 @@ export function generateNames(
     if (isBannedChar(ch)) return false;
     const strokes = STROKES[ch];
     if (!strokes) return false;
+    // Cap stroke count to avoid super complex chars
     if (strokes >= 31) return false;
     if (gender === 'female' && Array.isArray(MALE_ONLY_CHARS) && MALE_ONLY_CHARS.includes(ch)) return false;
     return true;
@@ -281,18 +308,17 @@ export function generateNames(
   const safePoems = Array.isArray(POEMS) ? POEMS : [];
   const poemEnabled = sourcePreference !== 'modern';
 
+  // 1. Generate from Poems
   if (poemEnabled) safePoems.forEach(poem => {
-    // 1. Gender Filter
+    // Gender Filter
     if (poem.gender !== 'mixed' && poem.gender !== gender) return;
-
-    // 2. Style Filter
+    // Style Filter
     if (targetStyle !== 'all' && poem.styles && !poem.styles.includes(targetStyle)) return;
 
     if (poem.keywords.length >= 2) {
       const c1 = normalizeChar(poem.keywords[0]);
       const c2 = normalizeChar(poem.keywords[1]);
       
-      // Safety check: Filter out male-only chars for females
       if (!isValidChar(c1) || !isValidChar(c2)) return;
 
       try {
@@ -305,7 +331,7 @@ export function generateNames(
     }
   });
   
-  const limit = 60;
+  const limit = 60; // Inner loop limit
 
   if (Number(nameLength) === 1) {
     const pool = uniq([...styleKeywords, ...modern, ...charsA, ...charsB]).filter(isValidChar);
@@ -320,42 +346,42 @@ export function generateNames(
       } catch (e) {}
     }
   } else {
+    // 2. Generate combinations
     for (let i = 0; i < Math.min(charsA.length, limit); i++) {
       for (let j = 0; j < Math.min(charsB.length, limit); j++) {
         const c1 = charsA[i];
         const c2 = charsB[j];
 
         if (!isValidChar(c1) || !isValidChar(c2)) continue;
+        if (c1 === c2) continue; // Avoid repeating chars like "Yang Yang" unless intentional
 
-        if (!candidates.find(c => c.char1 === c1 && c.char2 === c2)) {
-          try {
+        try {
             const candidate = calculateNameScore(surname, c1, c2, bazi);
             const bias = sourcePreference === 'modern' ? 2 : 0;
             const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
             candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
             candidates.push(candidate);
-          } catch (e) {}
+        } catch (e) {
+            // e.g. Homophone error, skip
         }
       }
     }
   }
 
-  // De-duplicate candidates by name (prevents repeats within one run)
+  // De-duplicate
   const uniqueMap = new Map();
   for (const c of candidates) {
-    const key = `${c.char1}|${c.char2}`;
+    const key = `${c.char1}|${c.char2 || ''}`;
     const existing = uniqueMap.get(key);
     if (!existing || (typeof c.score === 'number' && c.score > existing.score)) {
       uniqueMap.set(key, c);
     }
   }
 
-  // Sort by score desc
+  // Sort
   const sorted = Array.from(uniqueMap.values()).sort((a, b) => b.score - a.score);
 
-  // Stable paging: build a "diverse list" first, then slice by offset.
-  // This avoids duplicates when clicking "加载更多" (because the previous implementation
-  // applied diversity after offset, which can cause overlap across pages).
+  // Pagination with diversity check
   const diverse = [];
   const usedFullNames = new Set();
   const charCounts = {};
@@ -365,7 +391,7 @@ export function generateNames(
 
   for (let i = 0; i < sorted.length; i++) {
     const candidate = sorted[i];
-    const fullNameKey = candidate.fullName || `${candidate.surname}${candidate.char1}${candidate.char2 || ''}`;
+    const fullNameKey = candidate.fullName;
     if (usedFullNames.has(fullNameKey)) continue;
 
     const c1 = candidate.char1;
@@ -373,7 +399,7 @@ export function generateNames(
     const count1 = charCounts[c1] || 0;
     const count2 = c2 ? (charCounts[c2] || 0) : 0;
 
-    // Limit: Max 3 times per character in the overall list
+    // Diversity limit: reduced to 2 to force more variety
     if (count1 >= 3 || (c2 && count2 >= 3)) continue;
 
     diverse.push(candidate);

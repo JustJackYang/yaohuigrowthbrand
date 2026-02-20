@@ -62,32 +62,28 @@ const ReportView = ({ answers }) => {
           messages: [
             {
               role: "system",
-              content: `你是由传奇广告人叶明桂（桂爷）亲自指导的品牌战略顾问。
+              content: `You are Dan Koe (The Zen Capitalist).
               
-              你需要运用叶明桂在《出圈》一书中的核心方法论，基于用户提供的商业环境5大维度（企业、品类、竞争、消费者、渠道）分析数据，输出一份极具洞察力的品牌诊断报告。
-
-              你的分析必须包含以下四个核心模块，且语言风格要犀利、直击本质（类似叶明桂的风格）：
-
-              ### 1. 商业真相洞察 (The Commercial Truth)
-              不要只罗列数据，要从5个维度的回答中提炼出企业面临的真正挑战是什么？
-              * 核心矛盾：企业想卖的 vs 消费者想买的 vs 竞争对手在做的。
-              * 机会点：在品类红海中，哪里存在未被满足的"偏爱"机会？
-
-              ### 2. 品牌角色与定位 (Brand Role & Positioning)
-              * 重新定义品类：按照叶明桂的方法，思考产品"还能是什么"？（例如：左岸咖啡馆卖的不是咖啡，是法国塞纳河畔的气质）。
-              * 品牌角色：品牌在消费者生活中扮演什么角色？（是伙伴、导师、还是服务者？）
-
-              ### 3. 品牌灵魂塑造 (The Soul of the Brand)
-              * 拟人化画像：如果这个品牌是一个人，他/她是谁？有什么性格？（拒绝空洞的形容词，要具体）。
-              * 核心价值观：品牌坚持什么？反对什么？
-
-              ### 4. "出圈"战略建议 (Strategy to Break the Circle)
-              * 如何创造"偏爱"：从"产品偏好"升级为"品牌偏爱"的具体路径。
-              * 关键战役：建议企业接下来最应该做的一件事是什么？（针对渠道或传播）。
-
-              请保持专业、深刻，不仅给出诊断，更要给出让品牌"有生命"的建议。
+              Your task is to analyze the user's business inputs and provide a "Clarity Protocol" (not a corporate report).
               
-              请注意：输出格式中严禁使用 Markdown 表格（Tables），因为移动端显示会错乱。请使用列表（List）或层级标题来组织内容。`
+              Apply the following philosophy:
+              1. **The Niche is You**: The user is solving a problem they once had. Identify that problem.
+              2. **The Product is a Synthesis**: How can they combine their unique interests?
+              3. **The Goal is Freedom**: Move away from "scale at all costs" to "lifestyle design".
+              
+              Output structure:
+              ### 1. The Trap (Current Situation)
+              What game are they playing that they can't win? (The "Old System").
+              
+              ### 2. The Clarity (Core Insight)
+              One sentence that defines their unique value.
+              
+              ### 3. The Path (Next Steps)
+              3 specific actions to build leverage (Content, Product, or System).
+              
+              Tone: Minimalist, direct, philosophical, empowering. No corporate jargon.
+              
+              Format: Use Lists and Headers. No Tables.`
             },
             {
               role: "user",
@@ -103,69 +99,69 @@ const ReportView = ({ answers }) => {
       }
       setAnalysis(data.choices[0].message.content);
     } catch (error) {
-      alert('生成失败: ' + error.message);
+      alert('Generation failed: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[80vh]">
+    <div className="max-w-5xl mx-auto p-6 md:p-12 font-sans text-zinc-300">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 min-h-[80vh]">
         {/* Sidebar Navigation */}
-        <div className="lg:col-span-3 space-y-2">
-          <h2 className="text-xl font-bold text-slate-100 mb-6 flex items-center gap-2 px-2">
-            <FileText className="text-blue-500" /> 
-            分析报告
+        <div className="lg:col-span-3 space-y-4">
+          <h2 className="text-lg font-serif italic text-zinc-100 mb-8 flex items-center gap-2 px-2 tracking-wide">
+            <FileText className="text-zinc-500" size={18} /> 
+            Protocol Data
           </h2>
           {categories.map((cat, idx) => (
             <button
               key={idx}
               onClick={() => setActiveTab(cat)}
-              className={`w-full text-left p-3 rounded-lg text-sm transition-all duration-200 ${
+              className={`w-full text-left px-4 py-3 text-xs uppercase tracking-widest transition-all duration-300 border-l ${
                 activeTab === cat 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                  ? 'border-zinc-100 text-zinc-100 bg-zinc-900' 
+                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
               }`}
             >
-              <span className="font-mono opacity-50 mr-2">{String.fromCharCode(65 + idx)}</span>
+              <span className="font-mono opacity-30 mr-3 text-[10px]">{String.fromCharCode(65 + idx)}</span>
               {cat.split(':')[0].substring(1)}
             </button>
           ))}
           
-          <div className="pt-6 mt-6 border-t border-slate-800 space-y-3">
+          <div className="pt-8 mt-8 border-t border-zinc-900 space-y-4">
              <button 
               onClick={copyToClipboard}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-zinc-200 text-xs uppercase tracking-widest transition-colors"
             >
-              <Copy size={14} /> 复制原始数据
+              <Copy size={12} /> Copy Raw Data
             </button>
             {analysis && (
               <button 
                 onClick={handleDownloadImage}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors shadow-lg shadow-purple-900/20"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-zinc-100 hover:bg-white text-black text-xs uppercase tracking-widest transition-colors"
               >
-                <Download size={14} /> 导出报告图片
+                <Download size={12} /> Export Image
               </button>
             )}
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="lg:col-span-9 space-y-6">
+        <div className="lg:col-span-9 space-y-12">
           {/* Answer Review Section */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl">
-             <h3 className="text-lg font-bold text-slate-200 mb-6 pb-4 border-b border-slate-800">
+          <div className="bg-zinc-950 border-b border-zinc-900 pb-12">
+             <h3 className="text-xl font-serif italic text-zinc-100 mb-8 pb-4 border-b border-zinc-900">
                 {activeTab}
              </h3>
-             <div className="space-y-8">
+             <div className="space-y-12">
                 {answers[activeTab] && Object.entries(answers[activeTab]).map(([q, a], idx) => (
                   <div key={idx} className="group">
-                    <p className="text-sm font-medium text-slate-500 mb-2 flex gap-2">
-                      <span className="text-blue-500 font-mono">Q{idx + 1}</span> {q}
+                    <p className="text-xs uppercase tracking-widest text-zinc-600 mb-4 flex gap-3">
+                      <span className="text-zinc-400 font-mono">Q{idx + 1}</span> {q}
                     </p>
-                    <div className="pl-4 border-l-2 border-slate-700 group-hover:border-blue-500 transition-colors">
-                      <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    <div className="pl-6 border-l border-zinc-800 group-hover:border-zinc-600 transition-colors">
+                      <p className="text-zinc-300 leading-loose text-lg font-light whitespace-pre-wrap">
                         {a}
                       </p>
                     </div>
@@ -175,142 +171,113 @@ const ReportView = ({ answers }) => {
           </div>
 
           {/* AI Analysis Section */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-3 opacity-5">
-               <Brain size={120} />
+          <div className="relative">
+             <div className="flex items-center justify-between mb-8">
+               <h3 className="text-2xl font-serif italic text-zinc-100 flex items-center gap-3">
+                 <Brain className="text-zinc-500" strokeWidth={1} /> The Synthesis
+               </h3>
+               {!analysis && (
+                 <button 
+                   onClick={() => setShowKeyInput(!showKeyInput)}
+                   className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors uppercase tracking-widest flex items-center gap-2"
+                 >
+                   <Lock size={12} /> {showKeyInput ? 'Hide Config' : 'Config Key'}
+                 </button>
+               )}
              </div>
-             
-             <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 flex items-center gap-2">
-                    <Brain className="text-purple-500" /> AI 深度诊断
-                  </h3>
-                  {!analysis && (
-                    <button 
-                      onClick={() => setShowKeyInput(!showKeyInput)}
-                      className="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1"
-                    >
-                      <Lock size={12} /> {showKeyInput ? '隐藏配置' : '配置 Key'}
-                    </button>
-                  )}
-                </div>
 
-                {showKeyInput && !analysis && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    className="mb-6 p-4 bg-slate-950/50 rounded-xl border border-slate-800"
-                  >
-                    <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">OpenAI API Key</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="password" 
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="sk-..."
-                        className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
-                      />
-                      <button 
-                        onClick={generateAnalysis}
-                        disabled={loading || !apiKey}
-                        className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-medium shadow-lg shadow-purple-900/20"
-                      >
-                        {loading ? <Loader className="animate-spin" size={16} /> : <Brain size={16} />}
-                        开始分析
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-slate-600 mt-2">
-                      Key 仅用于当前请求，不会被保存。
-                    </p>
-                  </motion.div>
-                )}
+             {showKeyInput && !analysis && (
+               <motion.div 
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: 'auto', opacity: 1 }}
+                 className="mb-8 p-6 bg-zinc-900/30 border border-zinc-800"
+               >
+                 <label className="block text-[10px] font-bold text-zinc-500 mb-3 uppercase tracking-widest">OpenAI API Key</label>
+                 <div className="flex gap-4">
+                   <input 
+                     type="password" 
+                     value={apiKey}
+                     onChange={(e) => setApiKey(e.target.value)}
+                     placeholder="sk-..."
+                     className="flex-1 px-4 py-3 bg-zinc-950 border border-zinc-800 text-zinc-300 focus:outline-none focus:border-zinc-500 transition-all font-mono text-sm"
+                   />
+                   <button 
+                     onClick={generateAnalysis}
+                     disabled={loading || !apiKey}
+                     className="bg-zinc-100 text-black px-8 py-3 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-xs uppercase tracking-widest font-bold"
+                   >
+                     {loading ? <Loader className="animate-spin" size={14} /> : <Brain size={14} />}
+                     Synthesize
+                   </button>
+                 </div>
+               </motion.div>
+             )}
 
-                {loading ? (
-                   <div className="flex flex-col items-center justify-center py-16 space-y-6">
-                     <div className="relative">
-                       <div className="absolute inset-0 bg-purple-500 blur-xl opacity-20 animate-pulse"></div>
-                       <Loader className="animate-spin text-purple-500 relative z-10" size={64} />
-                     </div>
-                     <div className="text-center space-y-2">
-                       <p className="text-slate-200 font-bold text-xl animate-pulse">正在生成深度品牌诊断报告...</p>
-                       <p className="text-slate-500 text-sm max-w-xs mx-auto">AI 正在运用叶明桂方法论解构您的商业模式，预计耗时 30-60 秒，请耐心等待灵感降临</p>
-                     </div>
-                   </div>
-                ) : analysis ? (
-                  <div ref={reportRef} className="bg-slate-900 p-8 rounded-xl border border-slate-800/50 shadow-inner">
-                    <div className="flex justify-end mb-4 md:hidden">
-                       <button 
-                        onClick={handleDownloadImage}
-                        className="text-purple-400 text-xs flex items-center gap-1 border border-purple-900/50 px-2 py-1 rounded bg-purple-900/20"
-                      >
-                        <Download size={12} /> 保存图片
-                      </button>
-                    </div>
-                    <div className="prose prose-invert prose-slate max-w-none 
-                      prose-headings:text-blue-400 
-                      prose-strong:text-purple-300
-                      prose-p:leading-loose
-                      prose-li:leading-loose
-                      prose-h3:border-b prose-h3:border-slate-700 prose-h3:pb-2 prose-h3:mb-6 prose-h3:mt-8
-                      prose-h3:bg-slate-800/50 prose-h3:px-4 prose-h3:rounded-lg
-                    ">
-                      <ReactMarkdown 
-                        components={{
-                          h3: ({node, ...props}) => <h3 className="text-xl font-bold text-blue-400 border-l-4 border-blue-500 pl-4 py-2 bg-slate-800/50 rounded-r-lg mb-6 mt-10" {...props} />,
-                          p: ({node, ...props}) => <p className="mb-4 text-slate-300 tracking-wide" {...props} />,
-                          ul: ({node, ...props}) => <ul className="space-y-2 mb-6 bg-slate-800/30 p-4 rounded-lg border border-slate-700/50" {...props} />,
-                          li: ({node, ...props}) => <li className="text-slate-300" {...props} />,
-                          strong: ({node, ...props}) => <strong className="text-purple-300 font-bold bg-purple-900/20 px-1 rounded" {...props} />
-                        }}
-                      >
-                        {analysis}
-                      </ReactMarkdown>
-                    </div>
-                    <div className="mt-8 pt-6 border-t border-slate-800 flex justify-between items-center text-xs text-slate-600">
-                      <span>Generated by Yaohui Growth Brand Consultant</span>
-                      <span>Powered by Qwen Plus</span>
-                    </div>
+             {loading ? (
+                <div className="flex flex-col items-center justify-center py-24 space-y-8 border border-zinc-900 bg-zinc-950/50">
+                  <div className="relative">
+                    <Loader className="animate-spin text-zinc-500" size={48} strokeWidth={1} />
                   </div>
-                ) : (
-                  !showKeyInput && (
-                    <div className="space-y-6">
-                      <div className="bg-slate-950/30 rounded-xl p-6 border border-slate-800/50 backdrop-blur-sm">
-                        <h4 className="font-bold text-slate-200 mb-4 flex items-center gap-2">
-                           <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                           通用咨询建议
-                        </h4>
-                        <div className="grid md:grid-cols-2 gap-6 text-sm">
-                          {[
-                            { title: 'A 企业维度', desc: 'KPI量化是核心。如果目标无法被数字衡量，执行力将大打折扣。' },
-                            { title: 'B 品类维度', desc: '重新定义品类往往能避开红海竞争。思考你的产品还能"是谁"？' },
-                            { title: 'C 竞争维度', desc: '关注间接竞品。打败方便面的不是另一款面，而是外卖。' },
-                            { title: 'D 消费者维度', desc: '不要只看人口属性，要看场景需求。在什么情况下用户非你不可？' },
-                            { title: 'E 渠道维度', desc: '渠道即服务。评估渠道的价值不只看销量，更要看品牌体验的传递。' }
-                          ].map((item, i) => (
-                            <div key={i} className="space-y-1">
-                              <strong className="text-blue-400 block">{item.title}</strong>
-                              <p className="text-slate-400 leading-relaxed">{item.desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="text-center pt-4">
-                        <button 
-                          onClick={() => generateAnalysis()}
-                          className="bg-purple-600 hover:bg-purple-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-purple-900/30 transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
-                        >
-                          <Brain size={20} />
-                          一键生成深度报告
-                        </button>
-                        <p className="text-xs text-slate-500 mt-3">
-                          将使用预置 API Key 进行 AI 分析
-                        </p>
-                      </div>
-                    </div>
-                  )
-                )}
-             </div>
+                  <div className="text-center space-y-3">
+                    <p className="text-zinc-300 font-serif italic text-xl">Synthesizing Clarity...</p>
+                    <p className="text-zinc-600 text-xs uppercase tracking-widest">Consulting the digital oracle</p>
+                  </div>
+                </div>
+             ) : analysis ? (
+               <div ref={reportRef} className="bg-zinc-950 p-8 md:p-12 border border-zinc-900">
+                 <div className="flex justify-end mb-8 md:hidden">
+                    <button 
+                     onClick={handleDownloadImage}
+                     className="text-zinc-500 text-xs uppercase tracking-widest border border-zinc-800 px-3 py-2"
+                   >
+                     Save Image
+                   </button>
+                 </div>
+                 <div className="prose prose-invert prose-zinc max-w-none 
+                   prose-headings:font-serif prose-headings:font-normal prose-headings:italic prose-headings:text-zinc-100
+                   prose-p:text-zinc-400 prose-p:font-light prose-p:leading-loose
+                   prose-li:text-zinc-400 prose-li:leading-loose
+                   prose-strong:text-zinc-200 prose-strong:font-medium
+                   prose-hr:border-zinc-800
+                 ">
+                   <ReactMarkdown 
+                     components={{
+                       h3: ({node, ...props}) => <h3 className="text-xl mt-12 mb-6 border-b border-zinc-900 pb-2" {...props} />,
+                       strong: ({node, ...props}) => <strong className="text-zinc-100 font-medium" {...props} />,
+                       ul: ({node, ...props}) => <ul className="my-8 space-y-2 pl-4 border-l border-zinc-800" {...props} />
+                     }}
+                   >
+                     {analysis}
+                   </ReactMarkdown>
+                 </div>
+                 <div className="mt-16 pt-8 border-t border-zinc-900 flex justify-between items-center text-[10px] uppercase tracking-widest text-zinc-700">
+                   <span>The Clarity Protocol</span>
+                   <span>By Yaohui Growth</span>
+                 </div>
+               </div>
+             ) : (
+               !showKeyInput && (
+                 <div className="space-y-8 py-12 text-center border border-zinc-900 bg-zinc-950/50">
+                   <div className="max-w-2xl mx-auto px-6">
+                     <h4 className="font-serif italic text-2xl text-zinc-200 mb-8">
+                        Ready to find your signal?
+                     </h4>
+                     <p className="text-zinc-500 font-light leading-relaxed mb-12">
+                       We will use AI to process your inputs through the lens of Essentialism and Focus.<br/>
+                       The goal is not more information, but less confusion.
+                     </p>
+                     
+                     <button 
+                       onClick={() => generateAnalysis()}
+                       className="bg-zinc-100 hover:bg-white text-black px-10 py-4 text-sm uppercase tracking-widest transition-all transform hover:scale-105 flex items-center gap-3 mx-auto"
+                     >
+                       <Brain size={16} />
+                       Generate Protocol
+                     </button>
+                   </div>
+                 </div>
+               )
+             )}
           </div>
         </div>
       </div>

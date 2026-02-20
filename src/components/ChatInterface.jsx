@@ -238,31 +238,37 @@ const ChatInterface = ({ onFinish }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-2xl"
+          className="max-w-xl"
         >
-          <div className="w-20 h-20 bg-blue-600 rounded-2xl mx-auto mb-8 flex items-center justify-center shadow-[0_0_40px_rgba(37,99,235,0.3)]">
-            <Zap size={40} className="text-white" />
+          <div className="mb-12 flex justify-center">
+            <div className="w-16 h-16 border border-zinc-700 flex items-center justify-center rotate-45">
+               <div className="w-8 h-8 bg-zinc-100"></div>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
-            Yaohui Growth Brand Consultant
+          
+          <h1 className="text-4xl md:text-5xl font-serif italic text-zinc-100 mb-6 tracking-wide">
+            The Clarity Protocol
           </h1>
-          <p className="text-slate-400 text-lg mb-10 leading-relaxed max-w-xl mx-auto">
-            基于50个关键维度进行深度扫描，协助您重构商业认知与品牌战略。
-            准备好开始这场思维风暴了吗？
+          
+          <p className="text-zinc-500 text-lg mb-12 leading-relaxed max-w-md mx-auto font-light">
+            Most people are lost in the noise.<br/>
+            You are about to find your signal.
           </p>
-          <div className="flex gap-4 justify-center">
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <button 
               onClick={handleStart}
-              className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-blue-600 font-lg rounded-full hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 focus:ring-offset-slate-900"
+              className="group relative inline-flex items-center justify-center px-10 py-4 text-sm uppercase tracking-widest font-medium text-black bg-zinc-100 hover:bg-white transition-all duration-300"
             >
-              <span>启动系统</span>
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <span>Enter the Void</span>
+              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
+            
             <button 
               onClick={handleDemo}
-              className="px-8 py-4 font-medium text-slate-300 transition-all duration-200 bg-slate-800/50 rounded-full hover:bg-slate-800 hover:text-white border border-slate-700 hover:border-slate-600"
+              className="text-xs uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors border-b border-transparent hover:border-zinc-400 pb-1"
             >
-              一键演示 (Demo)
+              View Demo
             </button>
           </div>
         </motion.div>
@@ -279,16 +285,16 @@ const ChatInterface = ({ onFinish }) => {
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-4xl w-full"
         >
-          <h2 className="text-2xl font-bold text-white mb-8">请选择您的行业领域</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <h2 className="text-xl font-serif italic text-zinc-400 mb-12 tracking-wide">Select your reality</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {industries.map((ind) => (
               <button
                 key={ind.id}
                 onClick={() => handleIndustrySelect(ind)}
-                className="p-6 bg-slate-900 border border-slate-800 hover:border-blue-500 hover:bg-blue-600/10 rounded-xl transition-all group flex flex-col items-center gap-3"
+                className="group p-8 bg-zinc-950 border border-zinc-800 hover:border-zinc-400 transition-all duration-300 flex flex-col items-center gap-4"
               >
-                <span className="text-3xl">{ind.icon}</span>
-                <span className="text-slate-200 font-medium group-hover:text-blue-400">{ind.label}</span>
+                <span className="text-2xl opacity-50 group-hover:opacity-100 transition-opacity grayscale">{ind.icon}</span>
+                <span className="text-zinc-500 font-light text-sm tracking-wider uppercase group-hover:text-zinc-200 transition-colors">{ind.label}</span>
               </button>
             ))}
           </div>
@@ -327,18 +333,18 @@ const ChatInterface = ({ onFinish }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] max-w-5xl mx-auto w-full relative">
-      {/* Progress Bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-slate-800 z-10">
+    <div className="flex flex-col h-[calc(100vh-64px)] max-w-3xl mx-auto w-full relative">
+      {/* Minimal Progress Bar */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-zinc-900 z-10">
         <motion.div 
-          className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+          className="h-full bg-zinc-200"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
         />
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth pb-32">
+      <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 scroll-smooth pb-40">
         {messages.map((msg, index) => (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -347,26 +353,26 @@ const ChatInterface = ({ onFinish }) => {
             className={`flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}
           >
             {msg.type === 'divider' ? (
-              <div className="w-full flex items-center gap-4 my-6 opacity-50">
-                <div className="h-px bg-slate-700 flex-1"></div>
-                <span className="text-xs uppercase tracking-widest text-blue-400">{msg.text}</span>
-                <div className="h-px bg-slate-700 flex-1"></div>
+              <div className="w-full flex items-center gap-6 my-12 opacity-40">
+                <div className="h-px bg-zinc-800 flex-1"></div>
+                <span className="text-xs font-serif italic tracking-widest text-zinc-500 uppercase">{msg.text}</span>
+                <div className="h-px bg-zinc-800 flex-1"></div>
               </div>
             ) : (
-              <div className={`max-w-[85%] md:max-w-[70%] ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
+              <div className={`max-w-[90%] md:max-w-[85%] ${msg.type === 'user' ? 'text-right' : 'text-left'}`}>
                 {msg.qData && (
-                   <span className="inline-block text-[10px] font-mono text-slate-500 mb-1 px-2 py-0.5 rounded border border-slate-800 bg-slate-900/50">
-                     Q{msg.qData.indexInCat}/{msg.qData.totalInCat}
+                   <span className="inline-block text-[9px] uppercase tracking-widest text-zinc-600 mb-2">
+                     Query {msg.qData.indexInCat} / {msg.qData.totalInCat}
                    </span>
                 )}
                 
                 <div className={`
-                  relative p-4 rounded-2xl text-base leading-relaxed
+                  relative text-lg leading-relaxed font-light
                   ${msg.type === 'user' 
-                    ? 'bg-blue-600/10 text-blue-100 border border-blue-500/20 rounded-tr-sm' 
+                    ? 'bg-zinc-100 text-black p-6 shadow-xl' 
                     : msg.isSystem 
-                      ? 'text-slate-400 italic text-sm pl-0'
-                      : 'bg-slate-800/50 text-slate-200 border border-slate-700/50 rounded-tl-sm backdrop-blur-sm shadow-sm'
+                      ? 'text-zinc-500 italic text-sm pl-0 font-serif'
+                      : 'border-l border-zinc-800 pl-6 text-zinc-300 py-2'
                   }
                 `}>
                    {msg.text}
@@ -380,13 +386,13 @@ const ChatInterface = ({ onFinish }) => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex justify-center py-8"
+            className="flex justify-center py-12"
           >
             <button 
               onClick={() => onFinish(answers)}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold px-8 py-3 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all transform hover:scale-105"
+              className="bg-zinc-100 hover:bg-white text-black px-10 py-4 uppercase tracking-widest text-sm font-medium transition-all transform hover:scale-105"
             >
-              <Check size={20} /> 生成诊断报告
+              Generate Protocol
             </button>
           </motion.div>
         )}
@@ -396,28 +402,28 @@ const ChatInterface = ({ onFinish }) => {
 
       {/* Input Area */}
       {!messages.some(m => m.isFinal) && (
-        <div className="p-4 md:p-6 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent sticky bottom-0 z-20">
+        <div className="p-6 md:p-12 bg-zinc-950 sticky bottom-0 z-20">
           <div className="max-w-3xl mx-auto relative group">
-            <div className="absolute -top-12 right-0 flex gap-2">
+            <div className="absolute -top-16 right-0 flex gap-2">
               {currentQIndex > 0 && (
                 <button
                   onClick={() => onFinish(answers)}
-                  className="bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white px-4 py-2 rounded-full text-xs font-medium transition-colors border border-slate-700 flex items-center gap-1 shadow-lg"
+                  className="text-zinc-600 hover:text-zinc-300 px-4 py-2 text-xs uppercase tracking-widest transition-colors flex items-center gap-2"
                 >
-                  <Check size={14} />
-                  提前结束并生成报告
+                  <Check size={12} />
+                  Finish Early
                 </button>
               )}
             </div>
 
-            {/* Quick Options */}
+            {/* Minimal Quick Options */}
             {currentQ?.options && (
-              <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
                 {currentQ.options.map((opt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleOptionClick(opt)}
-                    className="whitespace-nowrap px-4 py-2 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-full text-sm border border-slate-700 transition-colors"
+                    className="whitespace-nowrap px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 hover:border-zinc-600 text-sm transition-all duration-300"
                   >
                     {opt}
                   </button>
@@ -425,36 +431,35 @@ const ChatInterface = ({ onFinish }) => {
               </div>
             )}
 
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-            <div className="relative flex items-center bg-slate-900 rounded-xl overflow-hidden shadow-2xl border border-slate-800">
+            <div className="relative flex items-center border-b border-zinc-800 focus-within:border-zinc-500 transition-colors duration-300 pb-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={currentQ?.placeholder || "在此输入您的回答..."}
+                placeholder={currentQ?.placeholder || "Type your thought..."}
                 autoFocus
-                className="flex-1 p-4 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none"
+                className="flex-1 p-2 bg-transparent text-xl text-zinc-200 placeholder-zinc-700 focus:outline-none font-light"
               />
-              <div className="flex items-center pr-2 gap-1">
+              <div className="flex items-center gap-4 pl-4">
                 <button 
                   onClick={handleSkip}
-                  className="p-2 text-slate-500 hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-800"
-                  title="跳过此问题"
+                  className="text-zinc-700 hover:text-zinc-500 transition-colors uppercase text-xs tracking-widest"
+                  title="Skip"
                 >
-                  <SkipForward size={20} />
+                  Skip
                 </button>
                 <button 
                   onClick={handleSend}
                   disabled={!input.trim()}
-                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:bg-slate-800 transition-colors"
+                  className="text-zinc-400 hover:text-white disabled:opacity-30 transition-colors"
                 >
-                  <Send size={20} />
+                  <ArrowRight size={24} strokeWidth={1} />
                 </button>
               </div>
             </div>
-            <div className="text-center mt-2">
-              <p className="text-xs text-slate-500">按 Enter 发送 · 这是一个深度思考的过程，请尽量详细</p>
+            <div className="text-center mt-4">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-700">Press Enter to Focus</p>
             </div>
           </div>
         </div>

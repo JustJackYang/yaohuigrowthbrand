@@ -1,5 +1,6 @@
 // Industries configuration
 export const industries = [
+  { id: 'indie', label: '出海/独立开发 (Indie Hacker)', icon: '🚀' },
   { id: 'tech', label: '科技/互联网/SaaS', icon: '💻' },
   { id: 'retail', label: '零售/电商/快消', icon: '🛍️' },
   { id: 'service', label: '专业服务/咨询', icon: '🤝' },
@@ -11,6 +12,14 @@ export const industries = [
 // Helper to get industry-specific placeholders/options
 const getIndustryContext = (industryId, questionText) => {
   const contextMap = {
+    indie: {
+      '用户量': '例如：The Old You (过去的那个困惑的自己) / Waitlist 1000人',
+      '产品': 'The Solution to your own problem (你自己问题的解法)',
+      '渠道': ['Twitter/X (Build in Public)', 'Newsletter (Deep thoughts)', 'YouTube (Philosophy)', 'LinkedIn'],
+      '竞品': 'The "Default Path" (朝九晚五的平庸路径) / Distraction (分心)',
+      '资产': 'Curiosity (好奇心) / Obsession (痴迷) / Synthesis (技能综合体)',
+      'KPI': 'Freedom (时间自由) / Clarity (认知清晰度) / $10k/mo (为了不工作而工作)',
+    },
     tech: {
       '用户量': '例如：DAU 10万，注册用户 50万',
       '产品': 'SaaS订阅服务 / APP',
