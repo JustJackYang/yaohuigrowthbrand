@@ -4,6 +4,7 @@ import { Loader2, Sparkles, User, RefreshCw, Search, BookOpen, Star, TrendingUp,
 import { calculateBazi } from '../lib/bazi';
 import { generateNames, calculateNameScore } from '../lib/naming';
 import { STYLE_DEFINITIONS } from '../lib/data';
+import { getLongitude } from '../lib/city_data';
 
 export default function NamingTool() {
   const [formData, setFormData] = useState({
@@ -41,7 +42,8 @@ export default function NamingTool() {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-        const baziResult = calculateBazi(formData.birthTime.replace('T', ' '), 120); // Default longitude
+        const longitude = getLongitude(formData.birthLocation);
+        const baziResult = calculateBazi(formData.birthTime.replace('T', ' '), longitude);
         
         let names = [];
         const currentOffset = isLoadMore ? offset + 10 : 0;
@@ -345,7 +347,10 @@ export default function NamingTool() {
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6 text-sm">
                   <div className="bg-slate-950/50 p-4 rounded-xl border border-white/5">
-                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">时间坐标</div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        真太阳时
+                        <span className="text-[8px] bg-slate-800 px-1 rounded text-slate-400" title="根据出生地经度和季节均时差校正后的天文时间，八字排盘以此为准">校正后</span>
+                    </div>
                     <div className="font-mono text-cyan-400 text-base">{result.bazi.solarTime}</div>
                     <div className="text-slate-400 mt-1 text-xs">{result.bazi.lunarDate}</div>
                   </div>
