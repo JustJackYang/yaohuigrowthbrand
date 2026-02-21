@@ -135,8 +135,31 @@ export function calculateBazi(
 
   const strongOrWeak = isStrong ? '身旺' : '身弱';
 
+  // Format date manually to local string (YYYY-MM-DD HH:mm)
+  // to prevent toISOString() from converting to UTC and confusing users.
+  // The calculated solarTimeDate is already the "adjusted" time in the local context.
+  // However, since it is a JS Date object, it holds a timestamp.
+  // If we want to display the "face value" of the adjusted time as if it were local time,
+  // we need to be careful.
+  
+  // Actually, the calculation above:
+  // solarTimeDate = new Date(date.getTime() + totalCorrectionMinutes * 60000);
+  // This shifts the timestamp.
+  // Example: 09:03 Local -> Timestamp X.
+  // Correction -40 mins.
+  // solarTimeDate -> Timestamp X - 40 mins.
+  // If we print this in Local Time, it will be 08:23. Correct!
+  // But previously we used toISOString(), which printed UTC (00:23).
+  
+  const y = solarTimeDate.getFullYear();
+  const m = String(solarTimeDate.getMonth() + 1).padStart(2, '0');
+  const d = String(solarTimeDate.getDate()).padStart(2, '0');
+  const h = String(solarTimeDate.getHours()).padStart(2, '0');
+  const min = String(solarTimeDate.getMinutes()).padStart(2, '0');
+  const solarTimeStr = `${y}-${m}-${d} ${h}:${min}`;
+
   return {
-    solarTime: solarTimeDate.toISOString().replace('T', ' ').substring(0, 16),
+    solarTime: solarTimeStr,
     lunarDate: lunar.toString(),
     bazi: {
       year: yearGanZhi,
