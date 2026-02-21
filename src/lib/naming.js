@@ -1,7 +1,7 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
+import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, FEMALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
 
 // Dynamic Impression Generator
-const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke) => {
+const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke, fullName) => {
     const wuxingTraits = {
         '木': { keyword: '仁爱', trait: '正直向上', career: '教育/艺术/医疗' },
         '火': { keyword: '礼仪', trait: '热情开朗', career: '科技/餐饮/演艺' },
@@ -29,14 +29,21 @@ const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke) => {
     
     // Age Suitability based on Sancai
     // Heaven (Youth/Elders), Person (Middle Age/Self), Earth (Middle-Late/Juniors)
-    // Simplified: Person is the core.
-    let age = `**年龄适配**：\n`;
+    let age = `**📅 人生阶段推演**：\n`;
+    const nameLabel = fullName ? `“${fullName}”小朋友` : '宝宝';
+    
     if (sancaiScore >= 5) {
-        age += `少年运势顺遂（得长辈助），中年事业有成（基础稳固），晚年安享富贵。全龄段皆宜。`;
+        age += `👶 **幼年 (0-12岁)**：${nameLabel}性格乖巧听话，深受长辈和老师喜爱，学业起步顺遂。\n`;
+        age += `🧑 **青年 (18-30岁)**：步入社会后贵人运强，容易获得提拔，事业发展如鱼得水。\n`;
+        age += `👴 **中晚年**：根基稳固，家庭和睦，晚年生活富足安康。全龄段皆宜。`;
     } else if (sancaiScore <= -5) {
-        age += `少年时期需磨砺心性，中年后凭借自身努力可开创局面。属大器晚成型。`;
+        age += `👶 **幼年 (0-12岁)**：${nameLabel}小时候可能比较调皮或有主见，需要家长耐心引导，磨砺心性。\n`;
+        age += `🧑 **青年 (18-30岁)**：早期打拼可能会遇到一些挑战，但正是这些经历会让他/她变得更强大。\n`;
+        age += `👴 **中晚年**：属于大器晚成型，中年后凭自身实力开创局面，晚景优渥。`;
     } else {
-        age += `青年时期平稳发展，中年后运势渐入佳境。适合稳扎稳打。`;
+        age += `👶 **幼年 (0-12岁)**：${nameLabel}成长环境平稳，无大起大落，度过快乐童年。\n`;
+        age += `🧑 **青年 (18-30岁)**：运势平稳上升，适合稳扎稳打，在专业领域深耕细作。\n`;
+        age += `👴 **中晚年**：付出终有回报，中年后运势渐入佳境，生活安逸。`;
     }
     
     psycho += age;
@@ -230,7 +237,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     }
 
     // 4. Social & Psychology (Dynamic Generation)
-    const { social, psycho } = getDynamicImpression(wx1, wx2, sancaiScore, totalStroke);
+    const { social, psycho } = getDynamicImpression(wx1, wx2, sancaiScore, totalStroke, surname + char1 + (char2 || ''));
     const socialAnalysis = social;
     const psychologyAnalysis = psycho;
 
@@ -289,7 +296,9 @@ export function generateNames(
     if (!strokes) return false;
     // Cap stroke count to avoid super complex chars
     if (strokes >= 31) return false;
+    // Strict Gender Separation
     if (gender === 'female' && Array.isArray(MALE_ONLY_CHARS) && MALE_ONLY_CHARS.includes(ch)) return false;
+    if (gender === 'male' && Array.isArray(FEMALE_ONLY_CHARS) && FEMALE_ONLY_CHARS.includes(ch)) return false;
     return true;
   };
 

@@ -156,7 +156,7 @@ export default function NamingTool() {
             </div>
             <div className="hidden md:flex items-center gap-4 text-xs font-mono text-slate-500">
                 <span className="px-2 py-0.5 bg-amber-900/20 border border-amber-900/30 text-amber-500 rounded text-[10px]">康熙字典校对</span>
-                <span>版本 V1.0.4</span>
+                <span>版本 V1.0.6</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>系统在线</span>
             </div>
@@ -416,7 +416,10 @@ export default function NamingTool() {
                                     </div>
                                 </div>
                                 <div className="flex gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">
-                                    <span>五行结构: {name.wuxing.join('/')}</span>
+                                    <span className="flex items-center gap-1">
+                                        五行: {name.wuxing.join('/')}
+                                        <span className="bg-amber-900/30 text-amber-500 px-1 py-0.5 rounded text-[8px] border border-amber-900/50">康熙</span>
+                                    </span>
                                     <span className="text-slate-700">|</span>
                                     <span>笔画总数: {name.strokes.total}</span>
                                 </div>
