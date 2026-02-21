@@ -1,5 +1,6 @@
-import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, FEMALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
+import { CHAR_DB, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, FEMALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
 import { CHAR_ATTRIBUTES, PARTICLES } from './char_attributes.js';
+import { CLASSIC_NAMES } from './classic_names.js';
 
 // Dynamic Impression Generator
 const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke, fullName) => {
@@ -357,33 +358,57 @@ export function generateNames(
   const charsA = uniq([...styleKeywords, ...modern, ...baseA]).filter(isValidChar);
   const charsB = uniq([...styleKeywords, ...modern, ...baseB]).filter(isValidChar);
   
-  const safePoems = Array.isArray(POEMS) ? POEMS : [];
   const poemEnabled = sourcePreference !== 'modern';
 
-  // 1. Generate from Poems
-  if (poemEnabled) safePoems.forEach(poem => {
-    if (poem.gender !== 'mixed' && poem.gender !== gender) return;
-    if (targetStyle !== 'all' && poem.styles && !poem.styles.includes(targetStyle)) return;
+  // 1. Generate from CLASSIC_NAMES (Prioritized)
+  if (poemEnabled && Number(nameLength) === 2) {
+      CLASSIC_NAMES.forEach(item => {
+          const c1 = item.name[0];
+          const c2 = item.name[1];
+          
+          if (!isValidChar(c1) || !isValidChar(c2)) return;
 
-    if (poem.keywords.length >= 2) {
-      const c1 = normalizeChar(poem.keywords[0]);
-      const c2 = normalizeChar(poem.keywords[1]);
-      
-      if (!isValidChar(c1) || !isValidChar(c2)) return;
-
-      try {
-        const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
-        const bias = sourcePreference === 'classic' ? 2 : 0;
-        const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
-        
-        // Remove artificial boost. Let the quality (Cultural Score +20) speak for itself.
-        // Cap at 100.
-        candidate.score = Math.min(100, candidate.score + bias + styleBias);
-        candidate.isPoem = true;
-        candidates.push(candidate);
-      } catch (e) {}
-    }
-  });
+          // Check if at least one char matches the favored elements
+          const wx1 = getWuxing(c1);
+          const wx2 = getWuxing(c2);
+          
+          // Strict filtering: At least one char must be Favorable (or Neutral but good meaning)
+          // Ideally we want at least one favorable char.
+          const isFavored1 = favoredElements.includes(wx1);
+          const isFavored2 = favoredElements.includes(wx2);
+          
+          // If neither is favored, skip (unless we are desperate, but for now strict)
+          // Exception: If both are valid chars and have good meaning, we might consider them if total score is high.
+          // But to ensure "Wuxing correctness", let's require at least one match OR compatible cycle.
+          
+          // Simplified: If user wants "Gold", allow "Gold+Earth" (Generating) or "Gold+Water" (Generated)
+          // But strict match is "Gold" or "Earth" (Resource).
+          
+          let match = false;
+          if (isFavored1 || isFavored2) match = true;
+          
+          if (match) {
+              try {
+                  const candidate = calculateNameScore(surname, c1, c2, bazi, item);
+                  // Boost Classic Names that fit Bazi
+                  // If perfectly fits (both favored), huge boost.
+                  // If partial fit, small boost.
+                  
+                  let boost = 0;
+                  if (isFavored1 && isFavored2) boost = 15;
+                  else if (isFavored1 || isFavored2) boost = 10;
+                  
+                  // Cultural Score is already maxed (20) inside calculateNameScore because `source` is provided.
+                  // We add a 'bonus' to total score to push them to the top of the list
+                  // But keep within 100.
+                  
+                  candidate.score = Math.min(100, candidate.score + boost);
+                  candidate.isClassic = true;
+                  candidates.push(candidate);
+              } catch (e) {}
+          }
+      });
+  }
   
   const limit = 60;
 
