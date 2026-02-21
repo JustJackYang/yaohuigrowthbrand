@@ -109,9 +109,9 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     let wuxingScore = 0; // Max 40
     let strokeScore = 0; // Max 30
     let culturalScore = 0; // Max 20
-    let meaningScore = 10; // Max 10 (Base score for meaningful characters)
+    let phoneticScore = 0; // Max 10
 
-    // 1. Wuxing Analysis
+    // 1. Wuxing Analysis (Max 40)
     const favored = bazi.favorable && bazi.favorable.length > 0 ? bazi.favorable : ['土', '金'];
     const getWuxing = (c) => {
         for (const [wx, chars] of Object.entries(CHAR_DB)) {
@@ -146,6 +146,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
             wuxingText.push(`「${char2}」(${wx2}) 五行相生`);
         }
     } else {
+        // Single char: double the score to match scale
         wuxingScore *= 2; 
     }
     
@@ -169,7 +170,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
 
     baziAnalysis = `日主${bazi.dayMaster}，${bazi.strongOrWeak}。\n${wuxingText.join("，")}。\n${relationText}。整体平衡度：${favored.includes(wx1) && (char2 ? favored.includes(wx2) : true) ? "⭐⭐⭐ 完美" : "⭐⭐ 良好"}`;
 
-    // 2. Stroke Analysis
+    // 2. Stroke Analysis (Max 30)
     let strokeAnalysis = "";
     const personStroke = s0 + s1; // 人格
     const earthStroke = char2 ? s1 + s2 : s1 + 1;  // 地格
@@ -186,23 +187,31 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     if (isControlling(sancai.heaven, sancai.person)) sancaiScore -= 5;
     if (isControlling(sancai.person, sancai.earth)) sancaiScore -= 5;
 
+    // Total Grid Score (Max 20)
     if (AUSPICIOUS_STROKES.includes(total)) {
-        strokeScore += 30;
+        strokeScore += 20;
         strokeAnalysis = `总格${total}(大吉) - 运势亨通`;
     } else {
-        strokeScore += 15;
+        strokeScore += 10;
         strokeAnalysis = `总格${total}(中平) - 守成之象`;
     }
     
     strokeAnalysis += ` | 人格${personStroke}(${AUSPICIOUS_STROKES.includes(personStroke) ? '吉' : '平'}) | 地格${earthStroke}(${AUSPICIOUS_STROKES.includes(earthStroke) ? '吉' : '平'})`;
     strokeAnalysis += ` | 三才:${sancai.heaven}${sancai.person}${sancai.earth}(${sancaiScore >= 5 ? '顺生' : sancaiScore <= -5 ? '相克' : '平'})`;
-    strokeScore += Math.max(-5, Math.min(10, sancaiScore));
+    
+    // Sancai Score (Max 10)
+    // sancaiScore range is -10 to +10. Normalize to 0-10.
+    // If sancaiScore >= 5 (Excellent) -> 10 pts
+    // If sancaiScore >= 0 (Good) -> 8 pts
+    // If sancaiScore < 0 (Bad) -> 5 pts
+    if (sancaiScore >= 5) strokeScore += 10;
+    else if (sancaiScore >= 0) strokeScore += 8;
+    else strokeScore += 5;
 
-    // 3. Cultural & Phonetic Analysis (Updated)
+    // 3. Phonetic Analysis (Max 10)
     let culturalAnalysis = "";
     let phoneticAnalysis = "";
 
-    // Phonetic Logic
     const t1 = CHAR_ATTRIBUTES[char1]?.tone;
     const t2 = char2 ? CHAR_ATTRIBUTES[char2]?.tone : null;
     
@@ -213,49 +222,55 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
 
     if (t1) {
        const tonePattern = `${pz(t1)}${t2 ? pz(t2) : ''}`;
-       // For 3 chars (Surname + Name), technically we should check full flow, but here we focus on the name part
        phoneticAnalysis = `🔊 **音律分析**\n音调为“${t1}声${t2 ? '、'+t2+'声' : ''}” [${tonePattern}]。`;
        if (char2) {
-          if (pz(t1) !== pz(t2)) phoneticAnalysis += "\n✅ 平仄搭配，抑扬顿挫，朗朗上口。";
-          else phoneticAnalysis += "\n⚠️ 虽为同调，但韵律和谐，读音响亮。"; 
+          if (pz(t1) !== pz(t2)) {
+              phoneticAnalysis += "\n✅ 平仄搭配，抑扬顿挫，朗朗上口。";
+              phoneticScore += 10;
+          } else {
+              phoneticAnalysis += "\n⚠️ 虽为同调，但韵律和谐，读音响亮。"; 
+              phoneticScore += 8;
+          }
        } else {
           phoneticAnalysis += "\n✅ 单字有力，余音绕梁。";
+          phoneticScore += 10;
        }
     } else {
        phoneticAnalysis = `🔊 **音律分析**\n声韵优美，读音响亮（暂无详细声调数据）。`;
+       phoneticScore += 8;
     }
 
-    // Cultural Logic
+    // 4. Cultural Analysis (Max 20)
     if (source) {
-        culturalScore += 10;
+        culturalScore += 20; // Full score for poem source
         culturalAnalysis = `📜 **典籍出处**\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${char2 ? wx2 : ''}之意象，意境深远。`;
     } else {
         const m1 = CHAR_ATTRIBUTES[char1]?.meaning;
         const m2 = char2 ? CHAR_ATTRIBUTES[char2]?.meaning : null;
         
         if (m1 || m2) {
-            culturalScore += 8;
+            culturalScore += 15; // High score for good dictionary meaning
             culturalAnalysis = "💡 **寓意解析**\n";
             if (m1) culturalAnalysis += `🔹 **${char1}**：${m1}。\n`;
             if (m2) culturalAnalysis += `🔹 **${char2}**：${m2}。\n`;
             culturalAnalysis += "\n✨ **综合评价**：二字结合，寓意美好，气韵生动。";
         } else {
-            culturalScore += 5;
+            culturalScore += 10; // Base score
             culturalAnalysis = "💡 **现代组合**\n字义稳重，朗朗上口，符合现代审美习惯。";
         }
     }
 
-    const totalScore = wuxingScore + strokeScore + culturalScore + meaningScore;
+    const totalScore = Math.min(100, wuxingScore + strokeScore + culturalScore + phoneticScore);
     
     let level = '一般';
     let summary = "";
-    if (totalScore >= 90) {
+    if (totalScore >= 95) {
         level = '⭐⭐⭐⭐⭐ (完美)';
         summary = "✅ **终极推荐**\n此名五行大补，数理全吉，且有文化出处。是难得的“三位一体”好名。";
-    } else if (totalScore >= 80) {
+    } else if (totalScore >= 85) {
         level = '⭐⭐⭐⭐ (优秀)';
         summary = "✅ **优选好名**\n五行平衡，数理吉祥。适合长期使用，助力人生运势。";
-    } else if (totalScore >= 70) {
+    } else if (totalScore >= 75) {
         level = '⭐⭐⭐ (良好)';
         summary = "⭕ **尚可备选**\n虽无大碍，但亮点不足。建议结合个人喜好选择。";
     } else {
@@ -274,7 +289,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
        strokes: { surname: s0, char1: s1, char2: s2, total },
        wuxing: [wx1, wx2],
        score: totalScore,
-       scoreDetails: { wuxing: wuxingScore, stroke: strokeScore, cultural: culturalScore, meaning: meaningScore },
+       scoreDetails: { wuxing: wuxingScore, stroke: strokeScore, cultural: culturalScore, phonetic: phoneticScore },
        analysis: {
            baziMatch: baziAnalysis,
            culturalDepth: culturalAnalysis,
@@ -360,9 +375,10 @@ export function generateNames(
         const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
         const bias = sourcePreference === 'classic' ? 2 : 0;
         const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
-        // Boost Poem scores significantly to ensure they appear first
-        const poemBoost = 200; 
-        candidate.score = Math.min(300, Math.max(0, candidate.score + bias + styleBias + poemBoost));
+        
+        // Remove artificial boost. Let the quality (Cultural Score +20) speak for itself.
+        // Cap at 100.
+        candidate.score = Math.min(100, candidate.score + bias + styleBias);
         candidate.isPoem = true;
         candidates.push(candidate);
       } catch (e) {}
