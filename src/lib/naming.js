@@ -1,4 +1,5 @@
 import { CHAR_DB, POEMS, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, FEMALE_ONLY_CHARS, MODERN_AUSPICIOUS_CHARS, BAD_NAME_CHARS, HOMOPHONE_BLACKLIST } from './data.js';
+import { CHAR_ATTRIBUTES, PARTICLES } from './char_attributes.js';
 
 // Dynamic Impression Generator
 const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke, fullName) => {
@@ -28,7 +29,6 @@ const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke, fullName) => {
     psycho += `**职业方向**：适合向${t1.career}或${t2.career}领域发展。\n`;
     
     // Age Suitability based on Sancai
-    // Heaven (Youth/Elders), Person (Middle Age/Self), Earth (Middle-Late/Juniors)
     let age = `**📅 人生阶段推演**：\n`;
     const nameLabel = fullName ? `“${fullName}”小朋友` : '宝宝';
     
@@ -84,14 +84,9 @@ const checkHomophones = (surname, char1, char2) => {
     }
     
     if (char2) {
-        // Check full name combinations if needed (e.g. Yang Wei)
-        // Check char2 specifically
         if (badList.includes(char2)) {
              throw new Error(`名字「${surname}...${char2}」可能包含不雅谐音`);
         }
-        
-        // Simple heuristic for 2-char names: Check if char1+char2 forms a bad word?
-        // Since we don't have pinyin, we rely on the blacklist being comprehensive for single chars relative to surname
     }
 };
 
@@ -103,7 +98,6 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         throw new Error(`名字包含不建议用字：「${char2}」`);
     }
     
-    // Check Homophones
     checkHomophones(surname, char1, char2);
 
     const s0 = STROKES[surname] || 0;
@@ -127,13 +121,11 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     };
     
     const wx1 = getWuxing(char1);
-    const wx2 = char2 ? getWuxing(char2) : wx1; // If single char, treat as doubled or neutral
+    const wx2 = char2 ? getWuxing(char2) : wx1;
     
     // Detailed Wuxing Analysis Text
     let baziAnalysis = "";
     const wuxingText = [];
-    
-    // Extract Day Master Element from string "Jia(Wood)" -> "Wood"
     const dmElement = bazi.dayMaster.match(/\((.)\)/)?.[1] || '';
     const isStrong = bazi.strongOrWeak === '身旺';
 
@@ -157,13 +149,11 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         wuxingScore *= 2; 
     }
     
-    // Construct Relationship Logic
     let relationText = "";
     if (dmElement) {
         if (wx1 === dmElement || wx2 === dmElement) {
              relationText = isStrong ? "⚠️ 增强日主(忌)" : "✅ 帮扶日主(喜)";
         } else {
-             // Simplified relationship logic
              const generating = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
              const controlling = { '木': '土', '土': '水', '水': '火', '火': '金', '金': '木' };
              
@@ -208,15 +198,51 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
     strokeAnalysis += ` | 三才:${sancai.heaven}${sancai.person}${sancai.earth}(${sancaiScore >= 5 ? '顺生' : sancaiScore <= -5 ? '相克' : '平'})`;
     strokeScore += Math.max(-5, Math.min(10, sancaiScore));
 
-    // 3. Cultural Source
+    // 3. Cultural & Phonetic Analysis (Updated)
     let culturalAnalysis = "";
+    let phoneticAnalysis = "";
+
+    // Phonetic Logic
+    const t1 = CHAR_ATTRIBUTES[char1]?.tone;
+    const t2 = char2 ? CHAR_ATTRIBUTES[char2]?.tone : null;
+    
+    const pz = (t) => {
+        if (!t) return '?';
+        return (t === 1 || t === 2) ? '平' : '仄';
+    };
+
+    if (t1) {
+       const tonePattern = `${pz(t1)}${t2 ? pz(t2) : ''}`;
+       // For 3 chars (Surname + Name), technically we should check full flow, but here we focus on the name part
+       phoneticAnalysis = `🔊 **音律分析**\n音调为“${t1}声${t2 ? '、'+t2+'声' : ''}” [${tonePattern}]。`;
+       if (char2) {
+          if (pz(t1) !== pz(t2)) phoneticAnalysis += "\n✅ 平仄搭配，抑扬顿挫，朗朗上口。";
+          else phoneticAnalysis += "\n⚠️ 虽为同调，但韵律和谐，读音响亮。"; 
+       } else {
+          phoneticAnalysis += "\n✅ 单字有力，余音绕梁。";
+       }
+    } else {
+       phoneticAnalysis = `🔊 **音律分析**\n声韵优美，读音响亮（暂无详细声调数据）。`;
+    }
+
+    // Cultural Logic
     if (source) {
         culturalScore += 10;
-        // Parse source like "Li Bai <Jing Ye Si>"
-        culturalAnalysis = `📜 典籍出处\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${char2 ? wx2 : ''}之意象，意境深远。`;
+        culturalAnalysis = `📜 **典籍出处**\n“${source.text}”\n—— ${source.source}。\n富有${wx1}${char2 ? wx2 : ''}之意象，意境深远。`;
     } else {
-        culturalScore += 8;
-        culturalAnalysis = "💡 现代组合\n字义稳重，朗朗上口，符合现代审美习惯。";
+        const m1 = CHAR_ATTRIBUTES[char1]?.meaning;
+        const m2 = char2 ? CHAR_ATTRIBUTES[char2]?.meaning : null;
+        
+        if (m1 || m2) {
+            culturalScore += 8;
+            culturalAnalysis = "💡 **寓意解析**\n";
+            if (m1) culturalAnalysis += `🔹 **${char1}**：${m1}。\n`;
+            if (m2) culturalAnalysis += `🔹 **${char2}**：${m2}。\n`;
+            culturalAnalysis += "\n✨ **综合评价**：二字结合，寓意美好，气韵生动。";
+        } else {
+            culturalScore += 5;
+            culturalAnalysis = "💡 **现代组合**\n字义稳重，朗朗上口，符合现代审美习惯。";
+        }
     }
 
     const totalScore = wuxingScore + strokeScore + culturalScore + meaningScore;
@@ -236,7 +262,6 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
         summary = "⚠️ **建议慎选**\n存在五行或数理上的短板，可能不够完美。";
     }
 
-    // 4. Social & Psychology (Dynamic Generation)
     const { social, psycho } = getDynamicImpression(wx1, wx2, sancaiScore, totalStroke, surname + char1 + (char2 || ''));
     const socialAnalysis = social;
     const psychologyAnalysis = psycho;
@@ -253,7 +278,7 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
        analysis: {
            baziMatch: baziAnalysis,
            culturalDepth: culturalAnalysis,
-           phonetic: `🔊 **音律建议**\n建议避免“全同调/全仄/全平”，优先选择抑扬起伏、读起来顺口的组合。`, 
+           phonetic: phoneticAnalysis, 
            stroke: strokeAnalysis,
            social: socialAnalysis,
            psychology: psychologyAnalysis,
@@ -277,13 +302,10 @@ export function generateNames(
 ) {
   const candidates = [];
   
-  // Use calculated favored elements or fallback to Earth/Metal
   const favoredElements = bazi.favorable && bazi.favorable.length > 0 ? bazi.favorable : ['土', '金'];
   
-  // Select character pools based on favored elements
-  // If we have 1 favored element, we use it for both chars or mix with generating element
   const wxA = favoredElements[0];
-  const wxB = favoredElements[1] || favoredElements[0]; // Fallback to same if only 1
+  const wxB = favoredElements[1] || favoredElements[0];
   
   const normalizeChar = (c) => (typeof c === 'string' ? c.trim() : '');
   const isValidChar = (c) => {
@@ -292,11 +314,13 @@ export function generateNames(
     if (/\s/.test(ch)) return false;
     if (!isHanChar(ch)) return false;
     if (isBannedChar(ch)) return false;
+    
+    // NEW: Filter out particles to avoid meaningless names
+    if (PARTICLES.includes(ch)) return false;
+
     const strokes = STROKES[ch];
     if (!strokes) return false;
-    // Cap stroke count to avoid super complex chars
     if (strokes >= 31) return false;
-    // Strict Gender Separation
     if (gender === 'female' && Array.isArray(MALE_ONLY_CHARS) && MALE_ONLY_CHARS.includes(ch)) return false;
     if (gender === 'male' && Array.isArray(FEMALE_ONLY_CHARS) && FEMALE_ONLY_CHARS.includes(ch)) return false;
     return true;
@@ -319,9 +343,7 @@ export function generateNames(
 
   // 1. Generate from Poems
   if (poemEnabled) safePoems.forEach(poem => {
-    // Gender Filter
     if (poem.gender !== 'mixed' && poem.gender !== gender) return;
-    // Style Filter
     if (targetStyle !== 'all' && poem.styles && !poem.styles.includes(targetStyle)) return;
 
     if (poem.keywords.length >= 2) {
@@ -340,7 +362,7 @@ export function generateNames(
     }
   });
   
-  const limit = 60; // Inner loop limit
+  const limit = 60;
 
   if (Number(nameLength) === 1) {
     const pool = uniq([...styleKeywords, ...modern, ...charsA, ...charsB]).filter(isValidChar);
@@ -362,7 +384,7 @@ export function generateNames(
         const c2 = charsB[j];
 
         if (!isValidChar(c1) || !isValidChar(c2)) continue;
-        if (c1 === c2) continue; // Avoid repeating chars like "Yang Yang" unless intentional
+        if (c1 === c2) continue;
 
         try {
             const candidate = calculateNameScore(surname, c1, c2, bazi);
@@ -371,13 +393,11 @@ export function generateNames(
             candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
             candidates.push(candidate);
         } catch (e) {
-            // e.g. Homophone error, skip
         }
       }
     }
   }
 
-  // De-duplicate
   const uniqueMap = new Map();
   for (const c of candidates) {
     const key = `${c.char1}|${c.char2 || ''}`;
@@ -387,10 +407,8 @@ export function generateNames(
     }
   }
 
-  // Sort
   const sorted = Array.from(uniqueMap.values()).sort((a, b) => b.score - a.score);
 
-  // Pagination with diversity check
   const diverse = [];
   const usedFullNames = new Set();
   const charCounts = {};
@@ -408,7 +426,6 @@ export function generateNames(
     const count1 = charCounts[c1] || 0;
     const count2 = c2 ? (charCounts[c2] || 0) : 0;
 
-    // Diversity limit: reduced to 2 to force more variety
     if (count1 >= 3 || (c2 && count2 >= 3)) continue;
 
     diverse.push(candidate);
