@@ -320,6 +320,7 @@ export const CHAR_ATTRIBUTES = {
   '崇': { tone: 2, meaning: '推崇备至，崇山峻岭' },
   '刚': { tone: 1, meaning: '刚正不阿，百炼成钢' },
   '锴': { tone: 3, meaning: '精铁为锴，坚韧刚强' },
+  '锫': { tone: 2, meaning: '稀有金属，坚硬闪亮' },
   '宗': { tone: 1, meaning: '一代宗师，光宗耀祖' },
   '昌': { tone: 1, meaning: '繁荣昌盛，昌明隆盛' },
   '素': { tone: 4, meaning: '素昧平生，朴素大方' },

@@ -158,7 +158,7 @@ export default function NamingTool() {
             </div>
             <div className="hidden md:flex items-center gap-4 text-xs font-mono text-slate-500">
                 <span className="px-2 py-0.5 bg-amber-900/20 border border-amber-900/30 text-amber-500 rounded text-[10px]">康熙字典校对</span>
-                <span>版本 V1.1.2</span>
+                <span>版本 V1.1.3</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>系统在线</span>
             </div>
