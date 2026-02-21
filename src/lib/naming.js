@@ -317,6 +317,10 @@ export function generateNames(
     
     // NEW: Filter out particles to avoid meaningless names
     if (PARTICLES.includes(ch)) return false;
+    
+    // NEW: Require characters to be in the Meaning Dictionary
+    // This ensures every generated name has a valid meaning and tone analysis
+    if (!CHAR_ATTRIBUTES[ch]) return false;
 
     const strokes = STROKES[ch];
     if (!strokes) return false;
@@ -356,7 +360,10 @@ export function generateNames(
         const candidate = calculateNameScore(surname, c1, c2, bazi, poem);
         const bias = sourcePreference === 'classic' ? 2 : 0;
         const styleBias = (styleKeywords.includes(c1) ? 1 : 0) + (styleKeywords.includes(c2) ? 1 : 0);
-        candidate.score = Math.min(100, Math.max(0, candidate.score + bias + styleBias));
+        // Boost Poem scores significantly to ensure they appear first
+        const poemBoost = 200; 
+        candidate.score = Math.min(300, Math.max(0, candidate.score + bias + styleBias + poemBoost));
+        candidate.isPoem = true;
         candidates.push(candidate);
       } catch (e) {}
     }
@@ -426,7 +433,12 @@ export function generateNames(
     const count1 = charCounts[c1] || 0;
     const count2 = c2 ? (charCounts[c2] || 0) : 0;
 
-    if (count1 >= 3 || (c2 && count2 >= 3)) continue;
+    // Strict diversity for the first page (offset=0): No repetition allowed
+    // For later pages, allow some repetition (up to 2 times)
+    const isFirstPage = desired <= 10;
+    const limit = isFirstPage ? 1 : 2;
+
+    if (count1 >= limit || (c2 && count2 >= limit)) continue;
 
     diverse.push(candidate);
     usedFullNames.add(fullNameKey);
