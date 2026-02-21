@@ -2,6 +2,14 @@ import { CHAR_DB, STROKES, STYLE_DEFINITIONS, MALE_ONLY_CHARS, FEMALE_ONLY_CHARS
 import { CHAR_ATTRIBUTES, PARTICLES } from './char_attributes.js';
 import { CLASSIC_NAMES } from './classic_names.js';
 
+// Helper to get Wuxing
+const getWuxing = (c) => {
+    for (const [wx, chars] of Object.entries(CHAR_DB)) {
+        if (chars.includes(c)) return wx;
+    }
+    return '未知';
+};
+
 // Dynamic Impression Generator
 const getDynamicImpression = (wx1, wx2, sancaiScore, totalStroke, fullName) => {
     const wuxingTraits = {
@@ -114,15 +122,12 @@ export function calculateNameScore(surname, char1, char2, bazi, source) {
 
     // 1. Wuxing Analysis (Max 40)
     const favored = bazi.favorable && bazi.favorable.length > 0 ? bazi.favorable : ['土', '金'];
-    const getWuxing = (c) => {
-        for (const [wx, chars] of Object.entries(CHAR_DB)) {
-            if (chars.includes(c)) return wx;
-        }
-        return '未知';
-    };
+    // Move getWuxing to outer scope or define here if needed inside calculateNameScore only
+    // But generateNames needs it too. So define it outside.
     
     const wx1 = getWuxing(char1);
     const wx2 = char2 ? getWuxing(char2) : wx1;
+
     
     // Detailed Wuxing Analysis Text
     let baziAnalysis = "";
