@@ -133,6 +133,8 @@ export const CHAR_ATTRIBUTES = {
   '蕴': { tone: 4, meaning: '底蕴深厚，含蓄内敛' },
   '竹': { tone: 2, meaning: '胸有成竹，高风亮节' },
   '笛': { tone: 2, meaning: '笛声悠扬，清越动听' },
+  '毅': { tone: 4, meaning: '刚毅果断，坚韧不拔' },
+  '谨': { tone: 3, meaning: '谨言慎行，严谨细致' },
 
   // Water (水)
   '涵': { tone: 2, meaning: '涵养深厚，包容万物' },
@@ -218,8 +220,13 @@ export const CHAR_ATTRIBUTES = {
   '霜': { tone: 1, meaning: '傲雪欺霜，坚贞不屈' },
   '雾': { tone: 4, meaning: '云雾缭绕，神秘莫测' },
   '霄': { tone: 1, meaning: '直冲云霄，气贯长虹' },
+  '宏': { tone: 2, meaning: '宏图大志，气度恢弘' },
+  '淼': { tone: 3, meaning: '浩渺无垠，水势浩大' },
 
   // Fire (火)
+  '炜': { tone: 3, meaning: '炜炜煌煌，光彩夺目' },
+  '焕': { tone: 4, meaning: '焕然一新，神采奕奕' },
+  '腾': { tone: 2, meaning: '腾云驾雾，飞黄腾达' },
   '煜': { tone: 4, meaning: '煜煜生辉，光照四方' },
   '照': { tone: 4, meaning: '吉星高照，肝胆相照' },
   '炼': { tone: 4, meaning: '千锤百炼，精益求精' },
@@ -321,6 +328,7 @@ export const CHAR_ATTRIBUTES = {
   '刚': { tone: 1, meaning: '刚正不阿，百炼成钢' },
   '锴': { tone: 3, meaning: '精铁为锴，坚韧刚强' },
   '锫': { tone: 2, meaning: '稀有金属，坚硬闪亮' },
+  '铮': { tone: 1, meaning: '铁骨铮铮，刚正不阿' },
   '宗': { tone: 1, meaning: '一代宗师，光宗耀祖' },
   '昌': { tone: 1, meaning: '繁荣昌盛，昌明隆盛' },
   '素': { tone: 4, meaning: '素昧平生，朴素大方' },
